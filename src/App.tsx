@@ -96,12 +96,7 @@ function App() {
     (async () => {
       const assetInfo = await indexAssets(Array.from(tokenAddresses));
 
-      const infoMap: AssetInfoMap = {
-        "0x0000000000000000000000000000000000000348": {
-          address: "0x0000000000000000000000000000000000000348",
-          name: "USD",
-        },
-      };
+      const infoMap: AssetInfoMap = {};
       assetInfo.forEach(({ address, ...rest }) => {
         infoMap[address] = {
           ...infoMap[address],
@@ -109,6 +104,10 @@ function App() {
           ...rest,
         };
       });
+      infoMap["0x0000000000000000000000000000000000000348"] = {
+        address: "0x0000000000000000000000000000000000000348",
+        name: "USD Designator Address",
+      };
       setAssetInfoMap(infoMap);
     })();
   }, [items]);

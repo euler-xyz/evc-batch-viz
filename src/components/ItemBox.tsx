@@ -24,8 +24,9 @@ function ItemBox({ item, i }: Props) {
             {item.decoded.functionName}()
           </span>
         </div>
-
-        <AddressValue a={item.targetContract} />
+        <div>
+          <AddressValue a={item.targetContract} label={item.targetLabel} />
+        </div>
       </div>
       <div className="args">
         {functionName === "setGovernorAdmin" && (
