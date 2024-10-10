@@ -8,9 +8,7 @@ import abiPerspective from "../abi/BasePerspective";
 
 export const ethereumClient = createPublicClient({
   chain: mainnet,
-  transport: http(
-    "https://eth-mainnet.g.alchemy.com/v2/EnSvsHJcAyHNTHaFvDiSjoHsmLlABN7P"
-  ),
+  transport: http("https://rpc.ankr.com/eth"),
 });
 
 export const abi = [

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 import { decodeEVCBatch } from "./lib/decode";
 import safeTx1 from "./assets/safe_tx1.json";
-import safeTx2 from "./assets/safe_tx2.json";
 import {
   AssetInfoMap,
   OracleInfoMap,
@@ -183,13 +182,7 @@ function App() {
           style={{ backgroundColor: "aqua", marginRight: "4px" }}
           onClick={() => loadPayload(safeTx1)}
         >
-          Load safe_tx1.json
-        </button>
-        <button
-          style={{ backgroundColor: "aqua" }}
-          onClick={() => loadPayload(safeTx2)}
-        >
-          Load safe_tx2.json
+          Load example (safe_tx1.json)
         </button>
       </div>
 
