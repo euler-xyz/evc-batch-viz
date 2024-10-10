@@ -11,13 +11,14 @@ type Props = {
 
 function ItemBox({ item, i }: Props) {
   const { functionName, args } = item.decoded;
+  const { argLabels } = item;
   return (
     <div className="batch-item">
       <div className="header-row">
         <div>
           <span style={{ color: "gray" }}>#{i}</span>{" "}
           <span style={{ fontWeight: "bold" }}>
-            {item.targetName ? `<${item.targetName}>` : "<?>"}::
+            {item.targetLabel ? `<${item.targetLabel}>` : "<?>"}::
           </span>
           <span style={{ fontStyle: "italic" }}>
             {item.decoded.functionName}()
@@ -29,20 +30,23 @@ function ItemBox({ item, i }: Props) {
       <div className="args">
         {functionName === "setGovernorAdmin" && (
           <div>
-            newGovernorAdmin &rarr; <AddressValue a={args[0]} />
+            newGovernorAdmin &rarr;{" "}
+            <AddressValue a={args[0]} label={argLabels?.[0]} />
           </div>
         )}
 
         {functionName === "setFeeReceiver" && (
           <div>
-            newFeeReceiver &rarr; <AddressValue a={args[0]} />
+            newFeeReceiver &rarr;{" "}
+            <AddressValue a={args[0]} label={argLabels?.[0]} />
           </div>
         )}
 
         {functionName === "setLTV" && (
           <div>
             <div>
-              collateral &rarr; <AddressValue a={args[0]} />
+              collateral &rarr;{" "}
+              <AddressValue a={args[0]} label={argLabels?.[0]} />
             </div>
             <div>
               borrowLTV &rarr; <LTVValue ltv={args[1]} />
@@ -70,14 +74,15 @@ function ItemBox({ item, i }: Props) {
 
         {functionName === "setInterestRateModel" && (
           <div>
-            newModel &rarr; <AddressValue a={args[0]} />
+            newModel &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
           </div>
         )}
 
         {functionName === "setHookConfig" && (
           <div>
             <div>
-              newHookTarget &rarr; <AddressValue a={args[0]} />
+              newHookTarget &rarr;{" "}
+              <AddressValue a={args[0]} label={argLabels?.[0]} />
             </div>
             <div>
               newHookedOps &rarr; <span>{args[1]}</span>
@@ -111,13 +116,13 @@ function ItemBox({ item, i }: Props) {
         {functionName === "govSetConfig" && (
           <div>
             <div>
-              base &rarr; <AddressValue a={args[0]} />
+              base &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
             </div>
             <div>
-              quote &rarr; <AddressValue a={args[1]} />
+              quote &rarr; <AddressValue a={args[1]} label={argLabels?.[1]} />
             </div>
             <div>
-              oracle &rarr; <AddressValue a={args[2]} />
+              oracle &rarr; <AddressValue a={args[2]} label={argLabels?.[2]} />
             </div>
           </div>
         )}
@@ -125,7 +130,7 @@ function ItemBox({ item, i }: Props) {
         {functionName === "govSetResolvedVault" && (
           <div>
             <div>
-              vault &rarr; <AddressValue a={args[0]} />
+              vault &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
             </div>
             <div>
               set &rarr; <BoolValue v={args[1]} />
@@ -136,7 +141,8 @@ function ItemBox({ item, i }: Props) {
         {functionName === "govSetFallbackOracle" && (
           <div>
             <div>
-              fallbackOracle &rarr; <AddressValue a={args[0]} />
+              fallbackOracle &rarr;{" "}
+              <AddressValue a={args[0]} label={argLabels?.[0]} />
             </div>
           </div>
         )}
@@ -144,7 +150,8 @@ function ItemBox({ item, i }: Props) {
         {functionName === "transferGovernance" && (
           <div>
             <div>
-              newGovernor &rarr; <AddressValue a={args[0]} />
+              newGovernor &rarr;{" "}
+              <AddressValue a={args[0]} label={argLabels?.[0]} />
             </div>
           </div>
         )}

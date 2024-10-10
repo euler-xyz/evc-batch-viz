@@ -3,9 +3,14 @@ import { useEffect, useState } from "react";
 import { decodeEVCBatch } from "./lib/decode";
 import safeTx1 from "./assets/safe_tx1.json";
 import safeTx2 from "./assets/safe_tx2.json";
-import { OracleInfoMap, VaultInfoMap, type DecodedEVCCall } from "./lib/types";
+import {
+  AssetInfoMap,
+  OracleInfoMap,
+  VaultInfoMap,
+  type DecodedEVCCall,
+} from "./lib/types";
 import { Address } from "viem";
-import { indexOracles, indexVaults } from "./lib/indexers";
+import { indexAssets, indexOracles, indexVaults } from "./lib/indexers";
 import BatchBox from "./components/BatchBox";
 
 function App() {
@@ -14,6 +19,7 @@ function App() {
   const [items, setItems] = useState<DecodedEVCCall[]>();
   const [oracleInfoMap, setOracleInfoMap] = useState<OracleInfoMap>({});
   const [vaultInfoMap, setVaultInfoMap] = useState<VaultInfoMap>({});
+  const [assetInfoMap, setAssetInfoMap] = useState<AssetInfoMap>({});
 
   const doDecode = () => {
     setError(undefined);
@@ -86,26 +92,74 @@ function App() {
       });
       setVaultInfoMap(infoMap);
     })();
+
+    (async () => {
+      const assetInfo = await indexAssets(Array.from(tokenAddresses));
+
+      const infoMap: AssetInfoMap = {
+        "0x0000000000000000000000000000000000000348": {
+          address: "0x0000000000000000000000000000000000000348",
+          name: "USD",
+        },
+      };
+      assetInfo.forEach(({ address, ...rest }) => {
+        infoMap[address] = {
+          ...infoMap[address],
+          address,
+          ...rest,
+        };
+      });
+      setAssetInfoMap(infoMap);
+    })();
   }, [items]);
 
   const richItems = items
-    ? items.map((item) => ({
-        ...item,
-        targetName:
+    ? items.map((item) => {
+        const targetLabel =
           oracleInfoMap[item.targetContract]?.name ??
           vaultInfoMap[item.targetContract]?.name ??
-          undefined,
-      }))
+          undefined;
+
+        let argLabels: { [index: number]: string } = {};
+
+        if (item.decoded.functionName === "govSetConfig") {
+          const baseLabel = assetInfoMap[item.decoded.args[0]]?.name;
+          if (baseLabel) argLabels[0] = baseLabel;
+
+          const quoteLabel = assetInfoMap[item.decoded.args[1]]?.name;
+          if (quoteLabel) argLabels[1] = quoteLabel;
+
+          const oracleLabel = oracleInfoMap[item.decoded.args[2]]?.name;
+          if (oracleLabel) argLabels[2] = oracleLabel;
+        }
+
+        if (item.decoded.functionName === "setLTV") {
+          const collateralLabel = vaultInfoMap[item.decoded.args[0]]?.name;
+          if (collateralLabel) argLabels[0] = collateralLabel;
+        }
+
+        if (item.decoded.functionName === "govSetResolvedVault") {
+          const collateralLabel = vaultInfoMap[item.decoded.args[0]]?.name;
+          if (collateralLabel) argLabels[0] = collateralLabel;
+        }
+
+        return {
+          ...item,
+          targetLabel,
+          argLabels,
+        };
+      })
     : undefined;
 
   return (
     <div className="main">
-      <h1>EVC Batch Viz</h1>
+      <h1>🧙‍♂️ EVC Batch Viz</h1>
 
       <textarea
         placeholder="Encoded batch"
         onChange={(e) => setText(e.target.value)}
         value={text}
+        style={{ height: "60px" }}
       />
 
       <div style={{ width: "100%" }}>
