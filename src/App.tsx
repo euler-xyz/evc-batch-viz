@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 
 import { decodeEVCBatch } from "./lib/decode";
 import safeTx1 from "./assets/safe_tx1.json";
-import ItemBox from "./components/ItemBox";
-import { OracleInfo, OracleInfoMap, type DecodedEVCCall } from "./lib/types";
+import safeTx2 from "./assets/safe_tx2.json";
+import { OracleInfoMap, VaultInfoMap, type DecodedEVCCall } from "./lib/types";
 import { Address } from "viem";
-import { indexOracles } from "./lib/indexers";
+import { indexOracles, indexVaults } from "./lib/indexers";
 import BatchBox from "./components/BatchBox";
 
 function App() {
-  const [text, setText] = useState<string>(JSON.stringify(safeTx1));
+  const [text, setText] = useState<string>("");
   const [error, setError] = useState<string>();
   const [items, setItems] = useState<DecodedEVCCall[]>();
   const [oracleInfoMap, setOracleInfoMap] = useState<OracleInfoMap>({});
+  const [vaultInfoMap, setVaultInfoMap] = useState<VaultInfoMap>({});
 
   const doDecode = () => {
     setError(undefined);
@@ -25,6 +26,12 @@ function App() {
       setError(e.toString());
       return;
     }
+  };
+
+  const loadPayload = (payload: any) => {
+    setError(undefined);
+    setItems(undefined);
+    setText(JSON.stringify(payload));
   };
 
   useEffect(() => {
@@ -66,7 +73,30 @@ function App() {
       });
       setOracleInfoMap(infoMap);
     })();
+
+    (async () => {
+      const vaultInfo = await indexVaults(Array.from(vaultAddresses));
+
+      const infoMap: OracleInfoMap = {};
+      vaultInfo.forEach(({ address, ...rest }) => {
+        infoMap[address] = {
+          address,
+          ...rest,
+        };
+      });
+      setVaultInfoMap(infoMap);
+    })();
   }, [items]);
+
+  const richItems = items
+    ? items.map((item) => ({
+        ...item,
+        targetName:
+          oracleInfoMap[item.targetContract]?.name ??
+          vaultInfoMap[item.targetContract]?.name ??
+          undefined,
+      }))
+    : undefined;
 
   return (
     <div className="main">
@@ -78,15 +108,39 @@ function App() {
         value={text}
       />
 
-      <button className="decode-button" onClick={() => doDecode()}>
-        Decode
-      </button>
+      <div style={{ width: "100%" }}>
+        <button
+          className="decode-button"
+          onClick={() => doDecode()}
+          style={{ marginRight: "4px" }}
+        >
+          Decode
+        </button>
+        <button
+          style={{ backgroundColor: "pink", marginRight: "4px" }}
+          onClick={() => loadPayload({})}
+        >
+          Clear
+        </button>
+        <button
+          style={{ backgroundColor: "aqua", marginRight: "4px" }}
+          onClick={() => loadPayload(safeTx1)}
+        >
+          Load safe_tx1.json
+        </button>
+        <button
+          style={{ backgroundColor: "aqua" }}
+          onClick={() => loadPayload(safeTx2)}
+        >
+          Load safe_tx2.json
+        </button>
+      </div>
 
       {error && <div className="error-box">{error}</div>}
 
-      {items && (
+      {richItems && (
         <div className="decoded-box">
-          <BatchBox items={items} />
+          <BatchBox items={richItems} />
         </div>
       )}
     </div>

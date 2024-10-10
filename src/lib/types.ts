@@ -12,6 +12,7 @@ export type DecodedItem = DecodeFunctionDataReturnType<typeof abi>;
 
 export type DecodedEVCCall = EVCBatchArgs & {
   decoded: DecodedItem;
+  targetName?: string;
 };
 
 export type OracleInfo = {
@@ -21,4 +22,13 @@ export type OracleInfo = {
 
 export type OracleInfoMap = {
   [address: Address]: OracleInfo;
+};
+
+export type VaultInfo = {
+  address: Address;
+  name?: string;
+};
+
+export type VaultInfoMap = {
+  [address: Address]: VaultInfo;
 };

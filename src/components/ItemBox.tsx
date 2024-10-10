@@ -14,9 +14,15 @@ function ItemBox({ item, i }: Props) {
   return (
     <div className="batch-item">
       <div className="header-row">
-        <div>#{i}</div>
-
-        <div>{item.decoded.functionName}</div>
+        <div>
+          <span style={{ color: "gray" }}>#{i}</span>{" "}
+          <span style={{ fontWeight: "bold" }}>
+            {item.targetName ? `<${item.targetName}>` : "<?>"}::
+          </span>
+          <span style={{ fontStyle: "italic" }}>
+            {item.decoded.functionName}()
+          </span>
+        </div>
 
         <AddressValue a={item.targetContract} />
       </div>
@@ -104,12 +110,11 @@ function ItemBox({ item, i }: Props) {
 
         {functionName === "govSetConfig" && (
           <div>
-            <div>(price router method)</div>
             <div>
-              base: <AddressValue a={args[0]} />
+              base &rarr; <AddressValue a={args[0]} />
             </div>
             <div>
-              quote: <AddressValue a={args[1]} />
+              quote &rarr; <AddressValue a={args[1]} />
             </div>
             <div>
               oracle &rarr; <AddressValue a={args[2]} />
@@ -119,9 +124,8 @@ function ItemBox({ item, i }: Props) {
 
         {functionName === "govSetResolvedVault" && (
           <div>
-            <div>(price router method)</div>
             <div>
-              vault: <AddressValue a={args[0]} />
+              vault &rarr; <AddressValue a={args[0]} />
             </div>
             <div>
               set &rarr; <BoolValue v={args[1]} />
@@ -131,7 +135,6 @@ function ItemBox({ item, i }: Props) {
 
         {functionName === "govSetFallbackOracle" && (
           <div>
-            <div>(price router method)</div>
             <div>
               fallbackOracle &rarr; <AddressValue a={args[0]} />
             </div>
@@ -140,7 +143,6 @@ function ItemBox({ item, i }: Props) {
 
         {functionName === "transferGovernance" && (
           <div>
-            <div>(price router method)</div>
             <div>
               newGovernor &rarr; <AddressValue a={args[0]} />
             </div>
