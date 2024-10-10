@@ -12,6 +12,8 @@ import {
 import { Address } from "viem";
 import { indexAssets, indexOracles, indexVaults } from "./lib/indexers";
 import BatchBox from "./components/BatchBox";
+import { getDiffs } from "./lib/diffs";
+import DiffsBox from "./components/DiffsBox";
 
 function App() {
   const [text, setText] = useState<string>("");
@@ -150,6 +152,8 @@ function App() {
       })
     : undefined;
 
+  const diffs = richItems ? getDiffs(richItems) : undefined;
+
   return (
     <div className="main">
       <h1>🧙‍♂️ EVC Batch Viz</h1>
@@ -190,6 +194,12 @@ function App() {
       </div>
 
       {error && <div className="error-box">{error}</div>}
+
+      {/* {diffs && (
+        <div className="decoded-box">
+          <DiffsBox diffs={diffs} />
+        </div>
+      )} */}
 
       {richItems && (
         <div className="decoded-box">

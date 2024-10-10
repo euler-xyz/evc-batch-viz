@@ -156,6 +156,17 @@ function ItemBox({ item, i }: Props) {
             </div>
           </div>
         )}
+
+        {functionName === "perspectiveVerify" && (
+          <div>
+            <div>
+              vault &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
+            </div>
+            <div>
+              failEarly &rarr; <BoolValue v={args[1]} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
