@@ -42,3 +42,46 @@ export type AssetInfo = {
 export type AssetInfoMap = {
   [address: Address]: AssetInfo;
 };
+
+export type LTVDiff = {
+  collateral: Address;
+  borrowLTV: number;
+  liquidationLTV: number;
+  rampDuration: number;
+};
+
+export type VaultDiff = {
+  address: Address;
+  newValues: {
+    supplyCap: number;
+    borrowCap: number;
+    interestRateModel: Address;
+    ltvs: LTVDiff[];
+    governorAdmin: Address;
+    feeReceiver: Address;
+  };
+};
+
+export type ConfigDiff = {
+  base: Address;
+  quote: Address;
+  oracle: Address;
+};
+
+export type ResolvedVaultDiff = {
+  vault: Address;
+  set: boolean;
+};
+
+export type RouterDiff = {
+  address: Address;
+  newValues: {
+    configs: ConfigDiff[];
+    resolvedVaults: ResolvedVaultDiff[];
+  };
+};
+
+export type Diffs = {
+  vaults: { [address: Address]: VaultDiff };
+  routers: { [address: Address]: RouterDiff };
+};

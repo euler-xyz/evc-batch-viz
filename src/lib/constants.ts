@@ -4,6 +4,7 @@ import { mainnet } from "viem/chains";
 import abiEulerRouter from "../abi/EulerRouter";
 import abiEVault from "../abi/EVault";
 import abiEvc from "../abi/EthereumVaultConnector";
+import abiPerspective from "../abi/BasePerspective";
 
 export const ethereumClient = createPublicClient({
   chain: mainnet,
@@ -12,4 +13,9 @@ export const ethereumClient = createPublicClient({
   ),
 });
 
-export const abi = [...abiEvc, ...abiEVault, ...abiEulerRouter];
+export const abi = [
+  ...abiEvc,
+  ...abiEVault,
+  ...abiEulerRouter,
+  ...abiPerspective,
+];
