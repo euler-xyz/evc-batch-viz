@@ -27,7 +27,13 @@ function App() {
     setItems(undefined);
 
     try {
-      setItems(decodeEVCBatch(JSON.parse(text)));
+      let cleanedText = text.trim();
+      let parsed;
+
+      if (cleanedText.startsWith('0x')) parsed = { data: cleanedText, };
+      else parsed = JSON.parse(cleanedText);
+
+      setItems(decodeEVCBatch(parsed));
     } catch (e: any) {
       console.error(e);
       setError(e.toString());
