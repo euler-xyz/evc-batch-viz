@@ -59,6 +59,8 @@ export type VaultDiff = {
     ltvs: LTVDiff[];
     governorAdmin: Address;
     feeReceiver: Address;
+    maxLiquidationDiscount: number;
+    liquidationCoolOffTime: number;
   };
 };
 

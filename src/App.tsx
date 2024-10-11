@@ -194,11 +194,11 @@ function App() {
 
       {error && <div className="error-box">{error}</div>}
 
-      {/* {diffs && (
+      {diffs && (
         <div className="decoded-box">
           <DiffsBox diffs={diffs} />
         </div>
-      )} */}
+      )}
 
       {richItems && (
         <div className="decoded-box">

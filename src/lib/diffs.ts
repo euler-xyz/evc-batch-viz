@@ -1,5 +1,5 @@
 import { Address } from "viem";
-import { DecodedEVCCall, Diffs, RouterDiff, VaultDiff } from "./types";
+import { DecodedEVCCall, Diffs, LTVDiff, RouterDiff, VaultDiff } from "./types";
 
 export function getDiffs(calls: DecodedEVCCall[]): Diffs {
   const vaults: { [address: Address]: VaultDiff } = {};
@@ -33,6 +33,48 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
         newValues: {
           ...existingVault?.newValues,
           feeReceiver: call.decoded.args[0],
+        },
+      };
+    } else if (f === "setInterestRateModel") {
+      const existingVault = vaults[call.targetContract];
+      vaults[call.targetContract] = {
+        ...existingVault,
+        newValues: {
+          ...existingVault?.newValues,
+          interestRateModel: call.decoded.args[0],
+        },
+      };
+    } else if (f === "setMaxLiquidationDiscount") {
+      const existingVault = vaults[call.targetContract];
+      vaults[call.targetContract] = {
+        ...existingVault,
+        newValues: {
+          ...existingVault?.newValues,
+          maxLiquidationDiscount: call.decoded.args[0],
+        },
+      };
+    } else if (f === "setLiquidationCoolOffTime") {
+      const existingVault = vaults[call.targetContract];
+      vaults[call.targetContract] = {
+        ...existingVault,
+        newValues: {
+          ...existingVault?.newValues,
+          liquidationCoolOffTime: call.decoded.args[0],
+        },
+      };
+    } else if (f === "setLTV") {
+      const existingVault = vaults[call.targetContract];
+      const ltvDiff: LTVDiff = {
+        collateral: call.decoded.args[0],
+        borrowLTV: call.decoded.args[1],
+        liquidationLTV: call.decoded.args[1],
+        rampDuration: call.decoded.args[2],
+      };
+      vaults[call.targetContract] = {
+        ...existingVault,
+        newValues: {
+          ...existingVault?.newValues,
+          ltvs: [...(existingVault?.newValues?.ltvs ?? []), ltvDiff],
         },
       };
     }
