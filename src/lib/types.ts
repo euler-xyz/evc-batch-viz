@@ -45,6 +45,7 @@ export type AssetInfoMap = {
 
 export type LTVDiff = {
   collateral: Address;
+  collateralName?: string;
   borrowLTV: number;
   liquidationLTV: number;
   rampDuration: number;

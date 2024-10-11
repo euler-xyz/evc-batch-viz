@@ -41,8 +41,12 @@ function DiffsBox({ diffs }: Props) {
                     {(value as LTVDiff[]).map((ltvDiff) => {
                       return (
                         <div>
-                          LTV for <AddressValue a={ltvDiff.collateral} />:
-                          borrowLTV=
+                          setLTV{" "}
+                          <AddressValue
+                            a={ltvDiff.collateral}
+                            label={ltvDiff.collateralName}
+                          />
+                          : borrowLTV=
                           <LTVValue ltv={ltvDiff.borrowLTV} />, liquidationLTV=
                           <LTVValue ltv={ltvDiff.liquidationLTV} />,
                           rampDuration={ltvDiff.rampDuration}

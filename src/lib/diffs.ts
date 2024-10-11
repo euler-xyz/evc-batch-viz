@@ -66,6 +66,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       const ltvDiff: LTVDiff = {
         collateral: call.decoded.args[0],
+        collateralName: call.argLabels?.[0],
         borrowLTV: call.decoded.args[1],
         liquidationLTV: call.decoded.args[2],
         rampDuration: call.decoded.args[3],
