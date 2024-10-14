@@ -13,13 +13,20 @@ type Props = {
 function ItemBox({ item, i }: Props) {
   if (!item.decoded) {
     return (
-      <div className="batch-item">
-        <div className="header-row">
-          <div>
-            Unknown
-          </div>
-        </div>
-      </div>
+      <Flex direction="column" borderColor="gray.200" borderWidth="1px" borderRadius="md" px={1}>
+        <Flex direction="row" align="center" gap={2}>
+          <Text whiteSpace="nowrap">
+            <Box as="span" color="gray.500">#{i}</Box>
+            {" "}
+            <Box as="span">
+              {"<"}
+              <AddressValue a={item.targetContract} />
+              {">"}::
+            </Box>
+            <Box as="span" fontStyle="italic">{item.data.substring(0, 10)}()</Box>
+          </Text>
+        </Flex>
+      </Flex>
     );
   }
   const { functionName, args } = item.decoded;
@@ -28,7 +35,7 @@ function ItemBox({ item, i }: Props) {
 
   return (
     <Flex direction="column" borderColor="gray.200" borderWidth="1px" borderRadius="md" px={1}>
-      <Flex direction="row" align="center" gap={2}>
+      <Flex direction="row" align="center" gap={2} justify="space-between">
         <Text whiteSpace="nowrap">
           <Box as="span" color="gray.500">#{i}</Box>
           {" "}
@@ -39,6 +46,16 @@ function ItemBox({ item, i }: Props) {
           </Box>
           <Box as="span" fontStyle="italic">{item.decoded.functionName}()</Box>
         </Text>
+        <Flex direction="row" align="center" gap={2}>
+          <Text>
+            onBehalfOf:{" "}
+            <AddressValue a={item.onBehalfOfAccount} />,
+          </Text>
+          <Text>
+            value: {" "}
+            {item.value.toString()}
+          </Text>
+        </Flex>
       </Flex>
       <Flex direction="column" pl={2}>
         {functionName === "setGovernorAdmin" && (
@@ -178,6 +195,10 @@ function ItemBox({ item, i }: Props) {
               failEarly &rarr; <BoolValue v={args[1]} />
             </div>
           </div>
+        )}
+
+        {functionName === "convertFees" && (
+          <div />
         )}
       </Flex>
     </Flex>

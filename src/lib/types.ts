@@ -1,4 +1,4 @@
-import { Address, DecodeFunctionDataReturnType } from "viem";
+import { Address, DecodeFunctionDataParameters, DecodeFunctionDataReturnType } from "viem";
 import { abi } from "./constants";
 
 export type EVCBatchArgs = {
@@ -9,6 +9,120 @@ export type EVCBatchArgs = {
 };
 
 export type DecodedItem = DecodeFunctionDataReturnType<typeof abi>;
+
+
+
+export type SetGovernorAdminCall = {
+  functionName: "setGovernorAdmin",
+  decodedArgs: {
+    newGovernorAdmin: Address,
+  }
+}
+
+export type SetFeeReceiverCall = {
+  functionName: "setFeeReceiver",
+  decodedArgs: {
+    newFeeReceiver: Address,
+  }
+}
+
+export type SetLTVCall = {
+  functionName: "setLTV",
+  decodedArgs: {
+    collateral: Address,
+    borrowLTV: number,
+    liquidationLTV: number,
+    rampDuration: number,
+  }
+}
+
+export type SetMaxLiquidationDiscountCall = {
+  functionName: "setMaxLiquidationDiscount",
+  decodedArgs: {
+    newDiscount: number,
+  }
+}
+
+export type SetLiquidationCoolOffTimeCall = {
+  functionName: "setLiquidationCoolOffTime",
+  decodedArgs: {
+    newCoolOffTime: number,
+  }
+}
+
+export type SetInterestRateModelCall = {
+  functionName: "setInterestRateModel",
+  decodedArgs: {
+    newModel: Address,
+  }
+}
+
+export type SetHookConfigCall = {
+  functionName: "setHookConfig",
+  decodedArgs: {
+    newHookTarget: Address,
+    newHookedOps: bigint,
+  }
+}
+
+export type SetCapsCall = {
+  functionName: "setCaps",
+  decodedArgs: {
+    supplyCap: number,
+    borrowCap: number,
+  }
+}
+
+export type SetInterestFeeCall = {
+  functionName: "setCaps",
+  decodedArgs: {
+    interestFee: number,
+  }
+}
+
+export type GovSetConfigCall = {
+  functionName: "govSetConfig",
+  decodedArgs: {
+    base: Address,
+    quote: Address,
+    oracle: Address,
+  }
+}
+
+export type GovSetResolvedVaultCall = {
+  functionName: "govSetResolvedVault",
+  decodedArgs: {
+    vault: Address,
+    set: boolean,
+  }
+}
+
+export type GovSetFallbackOracleCall = {
+  functionName: "govSetFallbackOracle",
+  decodedArgs: {
+    fallbackOracle: Address,
+  }
+}
+
+export type TransferGovernanceCall = {
+  functionName: "transferGovernance",
+  decodedArgs: {
+    newGovernor: Address,
+  }
+}
+
+export type PerspectiveVerifyCall = {
+  functionName: "transferGovernance",
+  decodedArgs: {
+    vault: Address,
+    failEarly: boolean,
+  }
+}
+
+export type UnknownCall = {
+  functionName: string,
+  decodedArgs: undefined,
+}
 
 export type DecodedEVCCall = EVCBatchArgs & {
   decoded?: DecodedItem;

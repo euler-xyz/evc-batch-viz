@@ -13,8 +13,9 @@ import { getTxCalldata, indexAssets, indexOracles, indexVaults } from "./lib/ind
 import BatchBox from "./components/BatchBox";
 import { getDiffs } from "./lib/diffs";
 import DiffsBox from "./components/DiffsBox";
-import { Alert, AlertIcon, Box, Button, ButtonGroup, Flex, Heading, Input, Spacer, Text, Textarea } from "@chakra-ui/react";
+import { Box, Button, ButtonGroup, Flex, Heading, Input, Spacer, Textarea } from "@chakra-ui/react";
 import ErrorBox from "./components/ErrorBox";
+import { eulerRouterFunctionNames, eVaultFunctionNames } from "./lib/constants";
 
 function App() {
   const [text, setText] = useState<string>("");
@@ -69,22 +70,22 @@ function App() {
 
     items.forEach((call) => {
       const f = call.decoded?.functionName;
-      if (f === "govSetConfig") {
+      if (!f) return;
+
+      if (eVaultFunctionNames.includes(f)) {
+        vaultAddresses.add(call.targetContract);
+      } else if (eulerRouterFunctionNames.includes(f)) {
         oracleAddresses.add(call.targetContract);
+      }
+
+      if (f === "govSetConfig") {
         tokenAddresses.add(call.decoded.args[0]);
         tokenAddresses.add(call.decoded.args[1]);
         oracleAddresses.add(call.decoded.args[2]);
       } else if (f === "govSetResolvedVault") {
         vaultAddresses.add(call.decoded.args[0]);
       } else if (f === "setLTV") {
-        vaultAddresses.add(call.targetContract);
         vaultAddresses.add(call.decoded.args[0]);
-      } else if (f === "setCaps") {
-        vaultAddresses.add(call.targetContract);
-      } else if (f === "setInterestRateModel") {
-        vaultAddresses.add(call.targetContract);
-      } else if (f === "setHookConfig") {
-        vaultAddresses.add(call.targetContract);
       }
     });
 
