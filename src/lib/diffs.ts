@@ -6,11 +6,13 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
   const routers: { [address: Address]: RouterDiff } = {};
 
   calls.forEach((call) => {
-    const f = call.decoded.functionName;
+    const f = call.decoded?.functionName;
+    if (!f) return;
     if (f === "setCaps") {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
+        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           supplyCap: call.decoded.args[0],
@@ -21,6 +23,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
+        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           governorAdmin: call.decoded.args[0],
@@ -30,6 +33,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
+        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           feeReceiver: call.decoded.args[0],
@@ -39,6 +43,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
+        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           interestRateModel: call.decoded.args[0],
@@ -48,6 +53,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
+        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           maxLiquidationDiscount: call.decoded.args[0],
@@ -57,6 +63,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
+        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           liquidationCoolOffTime: call.decoded.args[0],
@@ -73,6 +80,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       };
       vaults[call.targetContract] = {
         ...existingVault,
+        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           ltvs: [...(existingVault?.newValues?.ltvs ?? []), ltvDiff],

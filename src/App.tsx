@@ -8,14 +8,17 @@ import {
   VaultInfoMap,
   type DecodedEVCCall,
 } from "./lib/types";
-import { Address } from "viem";
-import { indexAssets, indexOracles, indexVaults } from "./lib/indexers";
+import { Address, Hash } from "viem";
+import { getTxCalldata, indexAssets, indexOracles, indexVaults } from "./lib/indexers";
 import BatchBox from "./components/BatchBox";
 import { getDiffs } from "./lib/diffs";
 import DiffsBox from "./components/DiffsBox";
+import { Alert, AlertIcon, Box, Button, ButtonGroup, Flex, Heading, Input, Spacer, Text, Textarea } from "@chakra-ui/react";
+import ErrorBox from "./components/ErrorBox";
 
 function App() {
   const [text, setText] = useState<string>("");
+  const [txHash, setTxHash] = useState<string>("");
   const [error, setError] = useState<string>();
   const [items, setItems] = useState<DecodedEVCCall[]>();
   const [oracleInfoMap, setOracleInfoMap] = useState<OracleInfoMap>({});
@@ -28,10 +31,7 @@ function App() {
 
     try {
       let cleanedText = text.trim();
-      let parsed;
-
-      if (cleanedText.startsWith('0x')) parsed = { data: cleanedText, };
-      else parsed = JSON.parse(cleanedText);
+      const parsed = cleanedText.startsWith('0x') ? { data: cleanedText, } : JSON.parse(cleanedText);
 
       setItems(decodeEVCBatch(parsed));
     } catch (e: any) {
@@ -40,6 +40,20 @@ function App() {
       return;
     }
   };
+
+  const loadTx = async () => {
+    setError(undefined);
+    setItems(undefined);
+
+    try {
+      const txCalldata = await getTxCalldata(txHash as Hash);
+      setText(txCalldata);
+    } catch (e: any) {
+      console.error(e);
+      setError(e.toString());
+      return;
+    }
+  }
 
   const loadPayload = (payload: any) => {
     setError(undefined);
@@ -54,7 +68,7 @@ function App() {
     const tokenAddresses: Set<Address> = new Set();
 
     items.forEach((call) => {
-      const f = call.decoded.functionName;
+      const f = call.decoded?.functionName;
       if (f === "govSetConfig") {
         oracleAddresses.add(call.targetContract);
         tokenAddresses.add(call.decoded.args[0]);
@@ -121,91 +135,79 @@ function App() {
 
   const richItems = items
     ? items.map((item) => {
-        const targetLabel =
-          oracleInfoMap[item.targetContract]?.name ??
-          vaultInfoMap[item.targetContract]?.name ??
-          undefined;
+      if (!item.decoded?.functionName) return item;
 
-        let argLabels: { [index: number]: string } = {};
+      const targetLabel =
+        oracleInfoMap[item.targetContract]?.name ??
+        vaultInfoMap[item.targetContract]?.name ??
+        undefined;
 
-        if (item.decoded.functionName === "govSetConfig") {
-          const baseLabel = assetInfoMap[item.decoded.args[0]]?.name;
-          if (baseLabel) argLabels[0] = baseLabel;
+      let argLabels: { [index: number]: string } = {};
 
-          const quoteLabel = assetInfoMap[item.decoded.args[1]]?.name;
-          if (quoteLabel) argLabels[1] = quoteLabel;
+      if (item.decoded.functionName === "govSetConfig") {
+        const baseLabel = assetInfoMap[item.decoded.args[0]]?.name;
+        if (baseLabel) argLabels[0] = baseLabel;
 
-          const oracleLabel = oracleInfoMap[item.decoded.args[2]]?.name;
-          if (oracleLabel) argLabels[2] = oracleLabel;
-        }
+        const quoteLabel = assetInfoMap[item.decoded.args[1]]?.name;
+        if (quoteLabel) argLabels[1] = quoteLabel;
 
-        if (item.decoded.functionName === "setLTV") {
-          const collateralLabel = vaultInfoMap[item.decoded.args[0]]?.name;
-          if (collateralLabel) argLabels[0] = collateralLabel;
-        }
+        const oracleLabel = oracleInfoMap[item.decoded.args[2]]?.name;
+        if (oracleLabel) argLabels[2] = oracleLabel;
+      }
 
-        if (item.decoded.functionName === "govSetResolvedVault") {
-          const collateralLabel = vaultInfoMap[item.decoded.args[0]]?.name;
-          if (collateralLabel) argLabels[0] = collateralLabel;
-        }
+      if (item.decoded.functionName === "setLTV") {
+        const collateralLabel = vaultInfoMap[item.decoded.args[0]]?.name;
+        if (collateralLabel) argLabels[0] = collateralLabel;
+      }
 
-        return {
-          ...item,
-          targetLabel,
-          argLabels,
-        };
-      })
+      if (item.decoded.functionName === "govSetResolvedVault") {
+        const collateralLabel = vaultInfoMap[item.decoded.args[0]]?.name;
+        if (collateralLabel) argLabels[0] = collateralLabel;
+      }
+
+      return {
+        ...item,
+        targetLabel,
+        argLabels,
+      };
+    })
     : undefined;
 
   const diffs = richItems ? getDiffs(richItems) : undefined;
 
   return (
-    <div className="main">
-      <h1>🧙‍♂️ EVC Batch Viz</h1>
+    <Box px={6} py={6}>
 
-      <textarea
-        placeholder="Encoded batch"
-        onChange={(e) => setText(e.target.value)}
-        value={text}
-        style={{ height: "60px" }}
-      />
+      <Flex direction="column" gap={4}>
+        <Heading>🧙‍♂️ EVC Batch Viz</Heading>
 
-      <div style={{ width: "100%" }}>
-        <button
-          className="decode-button"
-          onClick={() => doDecode()}
-          style={{ marginRight: "4px" }}
-        >
-          Decode
-        </button>
-        <button
-          style={{ backgroundColor: "pink", marginRight: "4px" }}
-          onClick={() => loadPayload({})}
-        >
-          Clear
-        </button>
-        <button
-          style={{ backgroundColor: "aqua", marginRight: "4px" }}
-          onClick={() => loadPayload(safeTx1)}
-        >
-          Load example (safe_tx1.json)
-        </button>
-      </div>
+        <Textarea
+          placeholder="Encoded batch"
+          onChange={(e) => setText(e.target.value)}
+          value={text}
+        />
+        <Flex direction="row" align="center">
+          <Flex direction="row">
+            <ButtonGroup size="sm">
+              <Button colorScheme="green" onClick={() => doDecode()}>Decode</Button>
+              <Button colorScheme="red" onClick={() => loadPayload({})}>Clear</Button>
+              <Button colorScheme="blue" onClick={() => loadPayload(safeTx1)}>Load Example</Button>
+            </ButtonGroup>
+          </Flex>
+          <Spacer />
+          <Flex direction="row" align="center" gap={2} w="25%">
+            <Input placeholder="Tx hash" size="sm" onChange={(e) => setTxHash(e.target.value.trim())} />
+            <Button colorScheme="blue" size="sm" onClick={() => loadTx()}>Load Tx</Button>
+          </Flex>
+        </Flex>
 
-      {error && <div className="error-box">{error}</div>}
+        {error && <ErrorBox msg={error} />}
 
-      {diffs && (
-        <div className="decoded-box">
-          <DiffsBox diffs={diffs} />
-        </div>
-      )}
+        {diffs && <DiffsBox diffs={diffs} />}
 
-      {richItems && (
-        <div className="decoded-box">
-          <BatchBox items={richItems} />
-        </div>
-      )}
-    </div>
+        {richItems && <BatchBox items={richItems} />}
+      </Flex>
+    </Box>
   );
 }
 

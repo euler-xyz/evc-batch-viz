@@ -11,7 +11,7 @@ export type EVCBatchArgs = {
 export type DecodedItem = DecodeFunctionDataReturnType<typeof abi>;
 
 export type DecodedEVCCall = EVCBatchArgs & {
-  decoded: DecodedItem;
+  decoded?: DecodedItem;
   targetLabel?: string;
   argLabels?: { [index: number]: string };
 };
@@ -53,6 +53,7 @@ export type LTVDiff = {
 
 export type VaultDiff = {
   address: Address;
+  label?: string;
   newValues: {
     supplyCap: number;
     borrowCap: number;

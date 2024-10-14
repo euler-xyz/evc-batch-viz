@@ -1,3 +1,4 @@
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { DecodedEVCCall } from "../lib/types";
 import AddressValue from "./values/AddressValue";
 import BoolValue from "./values/BoolValue";
@@ -10,25 +11,36 @@ type Props = {
 };
 
 function ItemBox({ item, i }: Props) {
-  const { functionName, args } = item.decoded;
-  const { argLabels } = item;
-  return (
-    <div className="batch-item">
-      <div className="header-row">
-        <div>
-          <span style={{ color: "gray" }}>#{i}</span>{" "}
-          <span style={{ fontWeight: "bold" }}>
-            {item.targetLabel ? `<${item.targetLabel}>` : "<?>"}::
-          </span>
-          <span style={{ fontStyle: "italic" }}>
-            {item.decoded.functionName}()
-          </span>
-        </div>
-        <div>
-          <AddressValue a={item.targetContract} label={item.targetLabel} />
+  if (!item.decoded) {
+    return (
+      <div className="batch-item">
+        <div className="header-row">
+          <div>
+            Unknown
+          </div>
         </div>
       </div>
-      <div className="args">
+    );
+  }
+  const { functionName, args } = item.decoded;
+  const { argLabels } = item;
+
+
+  return (
+    <Flex direction="column" borderColor="gray.200" borderWidth="1px" borderRadius="md" px={1}>
+      <Flex direction="row" align="center" gap={2}>
+        <Text whiteSpace="nowrap">
+          <Box as="span" color="gray.500">#{i}</Box>
+          {" "}
+          <Box as="span">
+            {"<"}
+            <AddressValue a={item.targetContract} label={item.targetLabel} />
+            {">"}::
+          </Box>
+          <Box as="span" fontStyle="italic">{item.decoded.functionName}()</Box>
+        </Text>
+      </Flex>
+      <Flex direction="column" pl={2}>
         {functionName === "setGovernorAdmin" && (
           <div>
             newGovernorAdmin &rarr;{" "}
@@ -167,8 +179,8 @@ function ItemBox({ item, i }: Props) {
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   );
 }
 

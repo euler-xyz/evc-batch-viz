@@ -1,4 +1,4 @@
-import { Address, parseAbi } from "viem";
+import { Address, Hash, Hex, parseAbi } from "viem";
 import { ethereumClient } from "./constants";
 import { AssetInfo, OracleInfo, VaultInfo } from "./types";
 
@@ -65,4 +65,9 @@ export async function indexAssets(addresses: Address[]): Promise<AssetInfo[]> {
     address: address as Address,
     name: callValues[i * 1] as string | undefined,
   }));
+}
+
+export async function getTxCalldata(hash: Hash): Promise<Hex> {
+  const tx = await ethereumClient.getTransaction({ hash });
+  return tx.input;
 }

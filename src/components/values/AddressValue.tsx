@@ -1,3 +1,4 @@
+import { Link, Text } from "@chakra-ui/react";
 import { Address, keccak256 } from "viem";
 
 type Props = {
@@ -11,13 +12,13 @@ function AddressValue({ a, label }: Props) {
   const s = (Number(`0x${bits.slice(8, 16)}`) % 60) + 40;
   const l = (Number(`0x${bits.slice(16, 24)}`) % 30) + 20;
   const color = `hsl(${h} ${s}% ${l}%)`;
+
+  const shortAddress = `${a.substring(0, 6)}...${a.substring(36)}`;
   return (
-    <>
-      <a href={`https://etherscan.io/address/${a}`} style={{ color }}>
-        {a}
-      </a>
+    <Link href={`https://etherscan.io/address/${a}`} color={color} whiteSpace="nowrap" isExternal>
+      {shortAddress}
       {label && <span style={{ color: "gray" }}> [{label}]</span>}
-    </>
+    </Link>
   );
 }
 
