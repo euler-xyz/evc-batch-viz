@@ -9,24 +9,25 @@ export function decodeEVCBatch(contents: { data: any }): DecodedEVCCall[] {
   });
 
   if (decodedBatch.functionName !== "batch") {
-    throw Error(`unexpected EVC function invocation: ${decodedBatch.functionName}`);
+    throw Error(
+      `unexpected EVC function invocation: ${decodedBatch.functionName}`
+    );
   }
 
   const items: DecodedEVCCall[] = [];
 
   for (const item of decodedBatch.args[0]) {
     try {
-      let decodedItem: DecodedItem = decodeFunctionData({
+      const decodedItem: DecodedItem = decodeFunctionData({
         abi,
         data: item.data,
       });
-  
+
       items.push({ ...item, decoded: decodedItem });
     } catch (e) {
       console.warn(e);
 
       items.push({ ...item });
-
     }
   }
 

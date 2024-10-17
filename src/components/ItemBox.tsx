@@ -1,206 +1,113 @@
-import { Box, Flex, Text } from "@chakra-ui/react";
-import { DecodedEVCCall } from "../lib/types";
+import { Box, Flex, Icon, Text } from "@chakra-ui/react";
+import {
+  AddressMetadata,
+  AddressMetadataMap,
+  DecodedEVCCall,
+} from "../lib/types";
 import AddressValue from "./values/AddressValue";
-import BoolValue from "./values/BoolValue";
-import CapValue from "./values/CapValue";
-import LTVValue from "./values/LTVValue";
+import { abi } from "../lib/constants";
+import { AbiParameter, Address, slice, toFunctionSelector } from "viem";
+import { FaBolt } from "react-icons/fa6";
+import CallParamValue from "./values/CallParamValue";
+import ItemActionBox from "./ItemActionBox";
 
 type Props = {
   item: DecodedEVCCall;
   i: number;
+  metadata: AddressMetadataMap<AddressMetadata>;
+  isAdvancedMode: boolean;
 };
 
-function ItemBox({ item, i }: Props) {
+function ItemBox({ item, i, metadata, isAdvancedMode }: Props) {
   if (!item.decoded) {
     return (
-      <Flex direction="column" borderColor="gray.200" borderWidth="1px" borderRadius="md" px={1}>
+      <Flex
+        direction="column"
+        borderColor="gray.200"
+        borderWidth="1px"
+        borderRadius="md"
+        px={1}
+      >
         <Flex direction="row" align="center" gap={2}>
           <Text whiteSpace="nowrap">
-            <Box as="span" color="gray.500">#{i}</Box>
-            {" "}
+            <Box as="span" color="gray.500">
+              #{i}
+            </Box>{" "}
             <Box as="span">
               {"<"}
-              <AddressValue a={item.targetContract} />
+              <AddressValue
+                a={item.targetContract}
+                metadata={metadata[item.targetContract]}
+              />
               {">"}::
             </Box>
-            <Box as="span" fontStyle="italic">{item.data.substring(0, 10)}()</Box>
+            <Box as="span" fontStyle="italic">
+              {item.data.substring(0, 10)}()
+            </Box>
           </Text>
         </Flex>
       </Flex>
     );
   }
-  const { functionName, args } = item.decoded;
-  const { argLabels } = item;
 
+  const { args } = item.decoded;
 
+  const signature = slice(item.data, 0, 4);
+  const abiFunction = abi.find(
+    (x) => x.type === "function" && signature === toFunctionSelector(x)
+  );
+
+  const inputParams = abiFunction?.inputs! as AbiParameter[];
   return (
-    <Flex direction="column" borderColor="gray.200" borderWidth="1px" borderRadius="md" px={1}>
-      <Flex direction="row" align="center" gap={2} justify="space-between">
-        <Text whiteSpace="nowrap">
-          <Box as="span" color="gray.500">#{i}</Box>
-          {" "}
-          <Box as="span">
-            {"<"}
-            <AddressValue a={item.targetContract} label={item.targetLabel} />
-            {">"}::
-          </Box>
-          <Box as="span" fontStyle="italic">{item.decoded.functionName}()</Box>
-        </Text>
-        <Flex direction="row" align="center" gap={2}>
-          <Text>
-            onBehalfOf:{" "}
-            <AddressValue a={item.onBehalfOfAccount} />,
-          </Text>
-          <Text>
-            value: {" "}
+    <Flex
+      direction="column"
+      borderColor="gray.100"
+      borderWidth="1px"
+      borderRadius="md"
+    >
+      {!isAdvancedMode && <ItemActionBox item={item} metadata={metadata} />}
+      {isAdvancedMode && (
+        <Flex
+          direction="row"
+          align="start"
+          gap={2}
+          justify="space-between"
+          mx={1}
+        >
+          <Text
+            wordBreak="break-all"
+            fontFamily="monospace"
+            fontSize="md"
+            lineHeight="1.2"
+          >
+            <Box as="span" color="gray.500">
+              #{i}
+            </Box>{" "}
+            <AddressValue
+              a={item.targetContract}
+              metadata={metadata[item.targetContract]}
+            />
+            .{item.decoded.functionName}(
+            <Flex direction="column" gap={0} ml={2}>
+              {args.map((arg, i) => {
+                const param = inputParams[i];
+                return (
+                  <Text key={i}>
+                    <CallParamValue
+                      param={param}
+                      arg={arg}
+                      metadata={metadata}
+                    />
+                  </Text>
+                );
+              })}
+            </Flex>
+            ), onBehalfOf=
+            <AddressValue a={item.onBehalfOfAccount} />, value=
             {item.value.toString()}
           </Text>
         </Flex>
-      </Flex>
-      <Flex direction="column" pl={2}>
-        {functionName === "setGovernorAdmin" && (
-          <div>
-            newGovernorAdmin &rarr;{" "}
-            <AddressValue a={args[0]} label={argLabels?.[0]} />
-          </div>
-        )}
-
-        {functionName === "setFeeReceiver" && (
-          <div>
-            newFeeReceiver &rarr;{" "}
-            <AddressValue a={args[0]} label={argLabels?.[0]} />
-          </div>
-        )}
-
-        {functionName === "setLTV" && (
-          <div>
-            <div>
-              collateral &rarr;{" "}
-              <AddressValue a={args[0]} label={argLabels?.[0]} />
-            </div>
-            <div>
-              borrowLTV &rarr; <LTVValue ltv={args[1]} />
-            </div>
-            <div>
-              liquidationLTV &rarr; <LTVValue ltv={args[2]} />
-            </div>
-            <div>
-              rampDuration &rarr; <span>{args[3]}</span>
-            </div>
-          </div>
-        )}
-
-        {functionName === "setMaxLiquidationDiscount" && (
-          <div>
-            newDiscount &rarr; <span>{args[0]}</span>
-          </div>
-        )}
-
-        {functionName === "setLiquidationCoolOffTime" && (
-          <div>
-            newCoolOffTime &rarr; <span>{args[0]}</span>
-          </div>
-        )}
-
-        {functionName === "setInterestRateModel" && (
-          <div>
-            newModel &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
-          </div>
-        )}
-
-        {functionName === "setHookConfig" && (
-          <div>
-            <div>
-              newHookTarget &rarr;{" "}
-              <AddressValue a={args[0]} label={argLabels?.[0]} />
-            </div>
-            <div>
-              newHookedOps &rarr; <span>{args[1]}</span>
-            </div>
-          </div>
-        )}
-
-        {functionName === "setConfigFlags" && (
-          <div>
-            newConfigFlags &rarr; <span>args[0]</span>
-          </div>
-        )}
-
-        {functionName === "setCaps" && (
-          <div>
-            <div>
-              supplyCap &rarr; <CapValue cap={args[0]} />
-            </div>
-            <div>
-              borrowCap &rarr; <CapValue cap={args[1]} />
-            </div>
-          </div>
-        )}
-
-        {functionName === "setInterestFee" && (
-          <div>
-            interestFee &rarr; <span>args[0]</span>
-          </div>
-        )}
-
-        {functionName === "govSetConfig" && (
-          <div>
-            <div>
-              base &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
-            </div>
-            <div>
-              quote &rarr; <AddressValue a={args[1]} label={argLabels?.[1]} />
-            </div>
-            <div>
-              oracle &rarr; <AddressValue a={args[2]} label={argLabels?.[2]} />
-            </div>
-          </div>
-        )}
-
-        {functionName === "govSetResolvedVault" && (
-          <div>
-            <div>
-              vault &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
-            </div>
-            <div>
-              set &rarr; <BoolValue v={args[1]} />
-            </div>
-          </div>
-        )}
-
-        {functionName === "govSetFallbackOracle" && (
-          <div>
-            <div>
-              fallbackOracle &rarr;{" "}
-              <AddressValue a={args[0]} label={argLabels?.[0]} />
-            </div>
-          </div>
-        )}
-
-        {functionName === "transferGovernance" && (
-          <div>
-            <div>
-              newGovernor &rarr;{" "}
-              <AddressValue a={args[0]} label={argLabels?.[0]} />
-            </div>
-          </div>
-        )}
-
-        {functionName === "perspectiveVerify" && (
-          <div>
-            <div>
-              vault &rarr; <AddressValue a={args[0]} label={argLabels?.[0]} />
-            </div>
-            <div>
-              failEarly &rarr; <BoolValue v={args[1]} />
-            </div>
-          </div>
-        )}
-
-        {functionName === "convertFees" && (
-          <div />
-        )}
-      </Flex>
+      )}
     </Flex>
   );
 }

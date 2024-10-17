@@ -1,4 +1,8 @@
-import { Address, DecodeFunctionDataParameters, DecodeFunctionDataReturnType } from "viem";
+import {
+  Address,
+  DecodeFunctionDataParameters,
+  DecodeFunctionDataReturnType,
+} from "viem";
 import { abi } from "./constants";
 
 export type EVCBatchArgs = {
@@ -10,124 +14,155 @@ export type EVCBatchArgs = {
 
 export type DecodedItem = DecodeFunctionDataReturnType<typeof abi>;
 
-
-
 export type SetGovernorAdminCall = {
-  functionName: "setGovernorAdmin",
+  functionName: "setGovernorAdmin";
   decodedArgs: {
-    newGovernorAdmin: Address,
-  }
-}
+    newGovernorAdmin: Address;
+  };
+};
 
 export type SetFeeReceiverCall = {
-  functionName: "setFeeReceiver",
+  functionName: "setFeeReceiver";
   decodedArgs: {
-    newFeeReceiver: Address,
-  }
-}
+    newFeeReceiver: Address;
+  };
+};
 
 export type SetLTVCall = {
-  functionName: "setLTV",
+  functionName: "setLTV";
   decodedArgs: {
-    collateral: Address,
-    borrowLTV: number,
-    liquidationLTV: number,
-    rampDuration: number,
-  }
-}
+    collateral: Address;
+    borrowLTV: number;
+    liquidationLTV: number;
+    rampDuration: number;
+  };
+};
 
 export type SetMaxLiquidationDiscountCall = {
-  functionName: "setMaxLiquidationDiscount",
+  functionName: "setMaxLiquidationDiscount";
   decodedArgs: {
-    newDiscount: number,
-  }
-}
+    newDiscount: number;
+  };
+};
 
 export type SetLiquidationCoolOffTimeCall = {
-  functionName: "setLiquidationCoolOffTime",
+  functionName: "setLiquidationCoolOffTime";
   decodedArgs: {
-    newCoolOffTime: number,
-  }
-}
+    newCoolOffTime: number;
+  };
+};
 
 export type SetInterestRateModelCall = {
-  functionName: "setInterestRateModel",
+  functionName: "setInterestRateModel";
   decodedArgs: {
-    newModel: Address,
-  }
-}
+    newModel: Address;
+  };
+};
 
 export type SetHookConfigCall = {
-  functionName: "setHookConfig",
+  functionName: "setHookConfig";
   decodedArgs: {
-    newHookTarget: Address,
-    newHookedOps: bigint,
-  }
-}
+    newHookTarget: Address;
+    newHookedOps: bigint;
+  };
+};
 
 export type SetCapsCall = {
-  functionName: "setCaps",
+  functionName: "setCaps";
   decodedArgs: {
-    supplyCap: number,
-    borrowCap: number,
-  }
-}
+    supplyCap: number;
+    borrowCap: number;
+  };
+};
 
 export type SetInterestFeeCall = {
-  functionName: "setCaps",
+  functionName: "setCaps";
   decodedArgs: {
-    interestFee: number,
-  }
-}
+    interestFee: number;
+  };
+};
 
 export type GovSetConfigCall = {
-  functionName: "govSetConfig",
+  functionName: "govSetConfig";
   decodedArgs: {
-    base: Address,
-    quote: Address,
-    oracle: Address,
-  }
-}
+    base: Address;
+    quote: Address;
+    oracle: Address;
+  };
+};
 
 export type GovSetResolvedVaultCall = {
-  functionName: "govSetResolvedVault",
+  functionName: "govSetResolvedVault";
   decodedArgs: {
-    vault: Address,
-    set: boolean,
-  }
-}
+    vault: Address;
+    set: boolean;
+  };
+};
 
 export type GovSetFallbackOracleCall = {
-  functionName: "govSetFallbackOracle",
+  functionName: "govSetFallbackOracle";
   decodedArgs: {
-    fallbackOracle: Address,
-  }
-}
+    fallbackOracle: Address;
+  };
+};
 
 export type TransferGovernanceCall = {
-  functionName: "transferGovernance",
+  functionName: "transferGovernance";
   decodedArgs: {
-    newGovernor: Address,
-  }
-}
+    newGovernor: Address;
+  };
+};
 
 export type PerspectiveVerifyCall = {
-  functionName: "transferGovernance",
+  functionName: "transferGovernance";
   decodedArgs: {
-    vault: Address,
-    failEarly: boolean,
-  }
-}
+    vault: Address;
+    failEarly: boolean;
+  };
+};
 
 export type UnknownCall = {
-  functionName: string,
-  decodedArgs: undefined,
-}
+  functionName: string;
+  decodedArgs: undefined;
+};
 
 export type DecodedEVCCall = EVCBatchArgs & {
   decoded?: DecodedItem;
-  targetLabel?: string;
-  argLabels?: { [index: number]: string };
+};
+
+export type AddressKind = "vault" | "oracle" | "token" | "global";
+
+export type VaultMetadata = {
+  kind: "vault";
+  name: string;
+  asset: Address;
+};
+
+export type OracleMetadata = {
+  kind: "oracle";
+  name: string;
+};
+
+export type TokenMetadata = {
+  kind: "token";
+  name: string;
+  symbol: string;
+  decimals: number;
+};
+
+export type GlobalMetadata = {
+  kind: "global";
+  label: string;
+};
+
+export type AddressMetadata =
+  | VaultMetadata
+  | OracleMetadata
+  | TokenMetadata
+  | GlobalMetadata;
+
+export type AddressMetadataMap<T extends AddressMetadata> = {
+  [address: Address]: T;
 };
 
 export type OracleInfo = {
@@ -157,9 +192,12 @@ export type AssetInfoMap = {
   [address: Address]: AssetInfo;
 };
 
+export type LabelMap = {
+  [address: Address]: string;
+};
+
 export type LTVDiff = {
   collateral: Address;
-  collateralName?: string;
   borrowLTV: number;
   liquidationLTV: number;
   rampDuration: number;
@@ -167,7 +205,6 @@ export type LTVDiff = {
 
 export type VaultDiff = {
   address: Address;
-  label?: string;
   newValues: {
     supplyCap: number;
     borrowCap: number;
@@ -196,6 +233,7 @@ export type RouterDiff = {
   newValues: {
     configs: ConfigDiff[];
     resolvedVaults: ResolvedVaultDiff[];
+    fallbackOracle: Address;
   };
 };
 

@@ -1,10 +1,15 @@
 import { Address, Hash, Hex, parseAbi } from "viem";
 import { ethereumClient } from "./constants";
-import { AssetInfo, OracleInfo, VaultInfo } from "./types";
+import {
+  AddressMetadataMap,
+  OracleMetadata,
+  TokenMetadata,
+  VaultMetadata,
+} from "./types";
 
 export async function indexOracles(
   addresses: Address[]
-): Promise<OracleInfo[]> {
+): Promise<AddressMetadataMap<OracleMetadata>> {
   const callResults = await ethereumClient.multicall({
     contracts: addresses.flatMap((address) => [
       {
@@ -19,19 +24,32 @@ export async function indexOracles(
     error ? undefined : result
   );
 
-  return addresses.map((address, i) => ({
-    address: address as Address,
-    name: callValues[i * 1] as string | undefined,
-  }));
+  const metadataMap: AddressMetadataMap<OracleMetadata> = {};
+
+  addresses.forEach((address, i) => {
+    metadataMap[address] = {
+      kind: "oracle",
+      name: callValues[i * 1] as string,
+    };
+  });
+
+  return metadataMap;
 }
 
-export async function indexVaults(addresses: Address[]): Promise<VaultInfo[]> {
+export async function indexVaults(
+  addresses: Address[]
+): Promise<AddressMetadataMap<VaultMetadata>> {
   const callResults = await ethereumClient.multicall({
     contracts: addresses.flatMap((address) => [
       {
         address,
         abi: parseAbi(["function name() view returns (string)"]),
         functionName: "name",
+      },
+      {
+        address,
+        abi: parseAbi(["function asset() view returns (address)"]),
+        functionName: "asset",
       },
     ]),
   });
@@ -40,19 +58,38 @@ export async function indexVaults(addresses: Address[]): Promise<VaultInfo[]> {
     error ? undefined : result
   );
 
-  return addresses.map((address, i) => ({
-    address: address as Address,
-    name: callValues[i * 1] as string | undefined,
-  }));
+  const metadataMap: AddressMetadataMap<VaultMetadata> = {};
+
+  addresses.forEach((address, i) => {
+    metadataMap[address] = {
+      kind: "vault",
+      name: callValues[i * 2] as string,
+      asset: callValues[i * 2 + 1] as Address,
+    };
+  });
+
+  return metadataMap;
 }
 
-export async function indexAssets(addresses: Address[]): Promise<AssetInfo[]> {
+export async function indexTokens(
+  addresses: Address[]
+): Promise<AddressMetadataMap<TokenMetadata>> {
   const callResults = await ethereumClient.multicall({
     contracts: addresses.flatMap((address) => [
       {
         address,
         abi: parseAbi(["function name() view returns (string)"]),
         functionName: "name",
+      },
+      {
+        address,
+        abi: parseAbi(["function symbol() view returns (string)"]),
+        functionName: "symbol",
+      },
+      {
+        address,
+        abi: parseAbi(["function decimals() view returns (uint8)"]),
+        functionName: "decimals",
       },
     ]),
   });
@@ -61,10 +98,23 @@ export async function indexAssets(addresses: Address[]): Promise<AssetInfo[]> {
     error ? undefined : result
   );
 
-  return addresses.map((address, i) => ({
-    address: address as Address,
-    name: callValues[i * 1] as string | undefined,
-  }));
+  const metadataMap: AddressMetadataMap<TokenMetadata> = {};
+
+  addresses.forEach((address, i) => {
+    const name = callValues[i * 3];
+    const symbol = callValues[i * 3 + 1];
+    const decimals = callValues[i * 3 + 2];
+
+    if (!decimals) return;
+    metadataMap[address] = {
+      kind: "token",
+      name: name as string,
+      symbol: symbol as string,
+      decimals: decimals as number,
+    };
+  });
+
+  return metadataMap;
 }
 
 export async function getTxCalldata(hash: Hash): Promise<Hex> {

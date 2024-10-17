@@ -1,5 +1,13 @@
 import { Address } from "viem";
-import { DecodedEVCCall, Diffs, LTVDiff, RouterDiff, VaultDiff } from "./types";
+import {
+  ConfigDiff,
+  DecodedEVCCall,
+  Diffs,
+  LTVDiff,
+  ResolvedVaultDiff,
+  RouterDiff,
+  VaultDiff,
+} from "./types";
 
 export function getDiffs(calls: DecodedEVCCall[]): Diffs {
   const vaults: { [address: Address]: VaultDiff } = {};
@@ -12,7 +20,6 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
-        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           supplyCap: call.decoded.args[0],
@@ -23,7 +30,6 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
-        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           governorAdmin: call.decoded.args[0],
@@ -33,7 +39,6 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
-        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           feeReceiver: call.decoded.args[0],
@@ -43,7 +48,6 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
-        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           interestRateModel: call.decoded.args[0],
@@ -53,7 +57,6 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
-        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           maxLiquidationDiscount: call.decoded.args[0],
@@ -63,7 +66,6 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       vaults[call.targetContract] = {
         ...existingVault,
-        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           liquidationCoolOffTime: call.decoded.args[0],
@@ -73,17 +75,57 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const existingVault = vaults[call.targetContract];
       const ltvDiff: LTVDiff = {
         collateral: call.decoded.args[0],
-        collateralName: call.argLabels?.[0],
         borrowLTV: call.decoded.args[1],
         liquidationLTV: call.decoded.args[2],
         rampDuration: call.decoded.args[3],
       };
       vaults[call.targetContract] = {
         ...existingVault,
-        label: call.targetLabel,
         newValues: {
           ...existingVault?.newValues,
           ltvs: [...(existingVault?.newValues?.ltvs ?? []), ltvDiff],
+        },
+      };
+    } else if (f === "govSetConfig") {
+      const existingRouter = routers[call.targetContract];
+
+      const configDiff: ConfigDiff = {
+        base: call.decoded.args[0],
+        quote: call.decoded.args[1],
+        oracle: call.decoded.args[2],
+      };
+      routers[call.targetContract] = {
+        ...existingRouter,
+        newValues: {
+          ...existingRouter?.newValues,
+          configs: [...(existingRouter?.newValues?.configs ?? []), configDiff],
+        },
+      };
+    } else if (f === "govSetResolvedVault") {
+      const existingRouter = routers[call.targetContract];
+
+      const resolvedVaultDiff: ResolvedVaultDiff = {
+        vault: call.decoded.args[0],
+        set: call.decoded.args[1],
+      };
+      routers[call.targetContract] = {
+        ...existingRouter,
+        newValues: {
+          ...existingRouter?.newValues,
+          resolvedVaults: [
+            ...(existingRouter?.newValues?.resolvedVaults ?? []),
+            resolvedVaultDiff,
+          ],
+        },
+      };
+    } else if (f === "govSetFallbackOracle") {
+      const existingRouter = routers[call.targetContract];
+
+      routers[call.targetContract] = {
+        ...existingRouter,
+        newValues: {
+          ...existingRouter?.newValues,
+          fallbackOracle: call.decoded.args[0],
         },
       };
     }
