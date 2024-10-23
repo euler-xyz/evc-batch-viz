@@ -24,8 +24,10 @@ function BatchBox({ items, metadata }: Props) {
   const [isAdvancedMode, setAdvancedMode] = useState<boolean>(true);
 
   return (
-    <Flex direction="column" gap={4}>
-      <Heading size="lg">Items</Heading>
+    <Flex direction="column" gap={2}>
+      <Heading size="lg" mb={2}>
+        Items
+      </Heading>
       <Flex direction="row" align="baseline" gap={4}>
         <Heading size="md">{items.length} batch items</Heading>
         <HStack>

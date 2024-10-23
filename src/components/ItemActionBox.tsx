@@ -1,5 +1,4 @@
-import { Flex, Icon, Text } from "@chakra-ui/react";
-import { FaBolt } from "react-icons/fa6";
+import { Box, Flex, Icon, Text } from "@chakra-ui/react";
 import { Address, maxUint256 } from "viem";
 import AddressValue from "./values/AddressValue";
 import {
@@ -9,11 +8,12 @@ import {
 } from "../lib/types";
 
 type Props = {
+  i: number;
   item: DecodedEVCCall;
   metadata: AddressMetadataMap<AddressMetadata>;
 };
 
-function ItemActionBox({ item, metadata }: Props) {
+function ItemActionBox({ i, item, metadata }: Props) {
   const { functionName, args } = item.decoded;
 
   function getContent() {
@@ -199,6 +199,13 @@ function ItemActionBox({ item, metadata }: Props) {
     }
 
     if (
+      functionName === "disableController" &&
+      item.targetContract !== "0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383"
+    ) {
+      return <Text>Disable {target} as controller</Text>;
+    }
+
+    if (
       functionName === "deposit" &&
       item.targetContract !== "0xbF893F7062FCcEB83d295e7FB407a64F941d5204"
     ) {
@@ -220,34 +227,46 @@ function ItemActionBox({ item, metadata }: Props) {
       );
     }
 
-    if (functionName === "borrow") {
-      const amount = args[0] === maxUint256 ? "all" : args[0].toString();
-      return (
-        <Text>
-          Borrow {amount} {metadata[args[1]]?.asset ?? ""}{" "}
-          <AddressValue a={args[1]} metadata={metadata[args[1]]} /> from{" "}
-          {target}
-        </Text>
-      );
-    }
+    // if (functionName === "borrow") {
+    //   const amount = args[0] === maxUint256 ? "all" : args[0].toString();
+    //   return (
+    //     <Text>
+    //       Borrow {amount} {metadata[args[1]]?.asset ?? ""}{" "}
+    //       <AddressValue a={args[1]} metadata={metadata[args[1]]} /> from{" "}
+    //       {target}
+    //     </Text>
+    //   );
+    // }
+
+    // if (functionName === "withdraw") {
+    //   const amount = args[0] === maxUint256 ? "all" : args[0].toString();
+    //   return (
+    //     <Text>
+    //       Withdraw {amount} {metadata[item.targetContract]?.asset ?? ""}{" "}
+    //       <AddressValue a={args[1]} metadata={metadata[args[1]]} /> from{" "}
+    //       {target}
+    //     </Text>
+    //   );
+    // }
   }
 
   const content = getContent();
 
   return (
-    content && (
-      <Flex
-        direction="row"
-        align="center"
-        gap={2}
-        borderRightWidth="1px"
-        borderBottomWidth="1px"
-        px={1}
-      >
-        <Icon as={FaBolt} color="teal.500" fontSize="md" />
-        {content}
-      </Flex>
-    )
+    <Flex
+      direction="row"
+      align="center"
+      gap={2}
+      borderWidth="1px"
+      borderColor="gray.200"
+      borderRadius="md"
+      px={1}
+    >
+      <Box as="span" color="gray.500">
+        #{i}
+      </Box>{" "}
+      {content ?? "Unknown action"}
+    </Flex>
   );
 }
 

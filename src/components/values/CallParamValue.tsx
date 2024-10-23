@@ -1,7 +1,13 @@
 import { Box, Flex } from "@chakra-ui/react";
-import { AbiParameter, Address } from "viem";
+import { AbiParameter, Address, decodeFunctionData } from "viem";
 import AddressValue from "./AddressValue";
-import { AddressMetadataMap, AddressMetadata } from "../../lib/types";
+import {
+  AddressMetadataMap,
+  AddressMetadata,
+  DecodedItem,
+} from "../../lib/types";
+import Swapper from "../../abi/Swapper";
+import CallBox from "../CallBox";
 
 type Props = {
   param: AbiParameter;
@@ -18,6 +24,33 @@ function CallParamValue({ param, arg, metadata }: Props) {
         {name}=
       </Box>
       {(() => {
+        if (Array.isArray(arg)) {
+          return (
+            <>
+              {"["}
+              <Flex direction="column" ml={2}>
+                {arg.map((el, i) => {
+                  const decodedItem: DecodedItem = decodeFunctionData({
+                    abi: Swapper,
+                    data: el,
+                  });
+
+                  return (
+                    <CallBox
+                      key={i}
+                      i={i}
+                      decoded={decodedItem}
+                      metadata={metadata}
+                      data={el}
+                    />
+                  );
+                })}
+              </Flex>
+              {"]"}
+            </>
+          );
+        }
+
         if (param.type === "address") {
           return (
             <AddressValue
@@ -45,6 +78,7 @@ function CallParamValue({ param, arg, metadata }: Props) {
             </>
           );
         }
+
         return <Box as="span">{arg.toString()}</Box>;
       })()}
     </Box>

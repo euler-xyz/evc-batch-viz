@@ -1,15 +1,12 @@
-import { Box, Flex, Icon, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import {
   AddressMetadata,
   AddressMetadataMap,
   DecodedEVCCall,
 } from "../lib/types";
 import AddressValue from "./values/AddressValue";
-import { abi } from "../lib/constants";
-import { AbiParameter, Address, slice, toFunctionSelector } from "viem";
-import { FaBolt } from "react-icons/fa6";
-import CallParamValue from "./values/CallParamValue";
 import ItemActionBox from "./ItemActionBox";
+import CallBox from "./CallBox";
 
 type Props = {
   item: DecodedEVCCall;
@@ -39,7 +36,7 @@ function ItemBox({ item, i, metadata, isAdvancedMode }: Props) {
                 a={item.targetContract}
                 metadata={metadata[item.targetContract]}
               />
-              {">"}::
+              {">"}.
             </Box>
             <Box as="span" fontStyle="italic">
               {item.data.substring(0, 10)}()
@@ -50,65 +47,32 @@ function ItemBox({ item, i, metadata, isAdvancedMode }: Props) {
     );
   }
 
-  const { args } = item.decoded;
-
-  const signature = slice(item.data, 0, 4);
-  const abiFunction = abi.find(
-    (x) => x.type === "function" && signature === toFunctionSelector(x)
-  );
-
-  const inputParams = abiFunction?.inputs! as AbiParameter[];
-  return (
-    <Flex
-      direction="column"
-      borderColor="gray.100"
-      borderWidth="1px"
-      borderRadius="md"
+  return !isAdvancedMode ? (
+    <ItemActionBox i={i} item={item} metadata={metadata} />
+  ) : (
+    <CallBox
+      data={item.data}
+      decoded={item.decoded}
+      i={i}
+      targetContract={item.targetContract}
+      metadata={metadata}
     >
-      {!isAdvancedMode && <ItemActionBox item={item} metadata={metadata} />}
-      {isAdvancedMode && (
-        <Flex
-          direction="row"
-          align="start"
-          gap={2}
-          justify="space-between"
-          mx={1}
-        >
-          <Text
-            wordBreak="break-all"
-            fontFamily="monospace"
-            fontSize="md"
-            lineHeight="1.2"
-          >
-            <Box as="span" color="gray.500">
-              #{i}
-            </Box>{" "}
-            <AddressValue
-              a={item.targetContract}
-              metadata={metadata[item.targetContract]}
-            />
-            .{item.decoded.functionName}(
-            <Flex direction="column" gap={0} ml={2}>
-              {args.map((arg, i) => {
-                const param = inputParams[i];
-                return (
-                  <Text key={i}>
-                    <CallParamValue
-                      param={param}
-                      arg={arg}
-                      metadata={metadata}
-                    />
-                  </Text>
-                );
-              })}
-            </Flex>
-            ), onBehalfOf=
-            <AddressValue a={item.onBehalfOfAccount} />, value=
-            {item.value.toString()}
-          </Text>
-        </Flex>
-      )}
-    </Flex>
+      <>
+        ,{" "}
+        <Box as="span" color="gray.500" fontStyle="italic">
+          onBehalfOf=
+        </Box>
+        <AddressValue
+          a={item.onBehalfOfAccount}
+          metadata={metadata[item.onBehalfOfAccount]}
+        />
+        ,{" "}
+        <Box as="span" color="gray.500" fontStyle="italic">
+          value=
+        </Box>
+        {item.value.toString()}
+      </>
+    </CallBox>
   );
 }
 

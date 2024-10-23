@@ -37,7 +37,8 @@ function RouterDiffBox({ address, routerDiff, metadata }: Props) {
     >
       <Flex direction="row" gap={2} align="center">
         <Text fontSize="lg">
-          Router <AddressValue a={address as Address} />
+          Router{" "}
+          <AddressValue a={address as Address} metadata={metadata[address]} />
         </Text>
         <IconButton
           onClick={onToggle}

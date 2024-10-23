@@ -1,10 +1,10 @@
 import { Address } from "viem";
-import { AddressMetadata, AddressMetadataMap, Diffs } from "../lib/types";
-import { Alert, Flex, Heading } from "@chakra-ui/react";
+import { AddressMetadataMap, Diffs, VaultMetadata } from "../lib/types";
+import { Flex, Heading } from "@chakra-ui/react";
 import VaultDiffBox from "./VaultDiffBox";
 import RouterDiffBox from "./RouterDiffBox";
 
-type Props = { diffs: Diffs; metadata: AddressMetadataMap<AddressMetadata> };
+type Props = { diffs: Diffs; metadata: AddressMetadataMap<VaultMetadata> };
 
 function DiffsBox({ diffs, metadata }: Props) {
   return (

@@ -4,6 +4,7 @@ import {
   AddressMetadataMap,
   LTVDiff,
   VaultDiff,
+  VaultMetadata,
 } from "../lib/types";
 import AddressValue from "./values/AddressValue";
 import CapValue from "./values/CapValue";
@@ -21,7 +22,7 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa6";
 type Props = {
   address: Address;
   vaultDiff: VaultDiff;
-  metadata: AddressMetadataMap<AddressMetadata>;
+  metadata: AddressMetadataMap<VaultMetadata>;
 };
 
 function VaultDiffBox({ address, vaultDiff, metadata }: Props) {
@@ -37,13 +38,7 @@ function VaultDiffBox({ address, vaultDiff, metadata }: Props) {
       p={2}
     >
       <Flex direction="row" gap={2} align="center">
-        <Text fontSize="lg">
-          Vault{" "}
-          <AddressValue
-            a={address as Address}
-            metadata={metadata[vaultDiff.label]}
-          />
-        </Text>
+        <AddressValue a={address as Address} metadata={metadata[address]} />
         <IconButton
           onClick={onToggle}
           size="xs"

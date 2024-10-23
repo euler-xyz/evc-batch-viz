@@ -9,6 +9,7 @@ import abiSwapper from "../abi/Swapper";
 import abiSwapVerifier from "../abi/SwapVerifier";
 import abiPermit2 from "../abi/Permit2";
 import abiPythProxy from "../abi/PythProxy";
+import abiTrackingRewardStreams from "../abi/TrackingRewardSteams";
 import { AddressMetadata, AddressMetadataMap } from "./types";
 
 export const ethereumClient = createPublicClient({
@@ -25,6 +26,7 @@ export const abi = [
   ...abiSwapVerifier,
   ...abiPermit2,
   ...abiPythProxy,
+  ...abiTrackingRewardStreams,
 ];
 
 function extractFunctionNames(a: Abi): string[] {
@@ -37,7 +39,6 @@ function extractFunctionNames(a: Abi): string[] {
 export const evcFunctionNames = extractFunctionNames(abiEvc);
 export const eVaultFunctionNames = extractFunctionNames(abiEVault);
 export const eulerRouterFunctionNames = extractFunctionNames(abiEulerRouter);
-export const perpsectiveFunctionNames = extractFunctionNames(abiPerspective);
 
 export const initAddressMetadataMap: AddressMetadataMap<AddressMetadata> = {
   "0x000000000022D473030F116dDEE9F6B43aC78BA3": {
@@ -59,6 +60,14 @@ export const initAddressMetadataMap: AddressMetadataMap<AddressMetadata> = {
   "0xbF893F7062FCcEB83d295e7FB407a64F941d5204": {
     kind: "global",
     label: "Swapper",
+  },
+  "0x9b2583d98fb39aA675CAA33b81EfbD539Bdf276c": {
+    kind: "global",
+    label: "Swapper",
+  },
+  "0x0D52d06ceB8Dcdeeb40Cfd9f17489B350dD7F8a3": {
+    kind: "global",
+    label: "TrackingRewardStreams",
   },
   "0xae26485ACDDeFd486Fe9ad7C2b34169d360737c7": {
     kind: "global",
