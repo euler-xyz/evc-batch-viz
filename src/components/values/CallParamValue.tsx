@@ -30,20 +30,25 @@ function CallParamValue({ param, arg, metadata }: Props) {
               {"["}
               <Flex direction="column" ml={2}>
                 {arg.map((el, i) => {
-                  const decodedItem: DecodedItem = decodeFunctionData({
-                    abi: Swapper,
-                    data: el,
-                  });
+                  try {
+                    const decodedItem: DecodedItem = decodeFunctionData({
+                      abi: Swapper,
+                      data: el,
+                    });
 
-                  return (
-                    <CallBox
-                      key={i}
-                      i={i}
-                      decoded={decodedItem}
-                      metadata={metadata}
-                      data={el}
-                    />
-                  );
+                    return (
+                      <CallBox
+                        key={i}
+                        i={i}
+                        decoded={decodedItem}
+                        metadata={metadata}
+                        data={el}
+                      />
+                    );
+                  } catch (e) {
+                    console.error(e);
+                    return el;
+                  }
                 })}
               </Flex>
               {"]"}
