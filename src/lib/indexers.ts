@@ -27,6 +27,8 @@ export async function indexOracles(
   const metadataMap: AddressMetadataMap<OracleMetadata> = {};
 
   addresses.forEach((address, i) => {
+    const name = callValues[i] as string | undefined;
+    if (!name) return;
     metadataMap[address] = {
       kind: "oracle",
       name: callValues[i * 1] as string,
@@ -61,6 +63,9 @@ export async function indexVaults(
   const metadataMap: AddressMetadataMap<VaultMetadata> = {};
 
   addresses.forEach((address, i) => {
+    const name = callValues[i * 2] as string | undefined;
+    const asset = callValues[i * 2 + 1] as Address | undefined;
+    if (!name || !asset) return;
     metadataMap[address] = {
       kind: "vault",
       name: callValues[i * 2] as string,
@@ -105,7 +110,7 @@ export async function indexTokens(
     const symbol = callValues[i * 3 + 1];
     const decimals = callValues[i * 3 + 2];
 
-    if (!decimals) return;
+    if (!decimals || !name || !symbol) return;
     metadataMap[address] = {
       kind: "token",
       name: name as string,

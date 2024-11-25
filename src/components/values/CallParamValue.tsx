@@ -1,13 +1,15 @@
 import { Box, Flex } from "@chakra-ui/react";
-import { AbiParameter, Address, decodeFunctionData } from "viem";
+import { type AbiParameter, type Address, decodeFunctionData } from "viem";
 import AddressValue from "./AddressValue";
-import {
+import type {
   AddressMetadataMap,
   AddressMetadata,
   DecodedItem,
 } from "../../lib/types";
 import Swapper from "../../abi/Swapper";
 import CallBox from "../CallBox";
+import FeeFlowController from "../../abi/FeeFlowController";
+import { Key } from "react";
 
 type Props = {
   param: AbiParameter;
@@ -32,7 +34,7 @@ function CallParamValue({ param, arg, metadata }: Props) {
                 {arg.map((el, i) => {
                   try {
                     const decodedItem: DecodedItem = decodeFunctionData({
-                      abi: Swapper,
+                      abi: [...Swapper, ...FeeFlowController],
                       data: el,
                     });
 
@@ -70,18 +72,24 @@ function CallParamValue({ param, arg, metadata }: Props) {
             <>
               {param.internalType}(
               <Flex direction="column" ml={2}>
-                {param.components.map((paramComponent, i) => (
-                  <CallParamValue
-                    key={i}
-                    param={paramComponent}
-                    arg={arg[paramComponent.name]}
-                    metadata={metadata}
-                  />
-                ))}
+                {param.components.map(
+                  (paramComponent: AbiParameter, i: Key | null | undefined) => (
+                    <CallParamValue
+                      key={i}
+                      param={paramComponent}
+                      arg={arg[paramComponent.name]}
+                      metadata={metadata}
+                    />
+                  )
+                )}
               </Flex>
               )
             </>
           );
+        }
+
+        if (param.type === "array") {
+          return <Box as="span">ARRAY{arg.toString()}</Box>;
         }
 
         return <Box as="span">{arg.toString()}</Box>;

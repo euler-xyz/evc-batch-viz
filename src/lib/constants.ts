@@ -1,4 +1,4 @@
-import { Abi, AbiParameter, createPublicClient, http } from "viem";
+import { type Abi, createPublicClient, http } from "viem";
 import { mainnet } from "viem/chains";
 
 import abiEulerRouter from "../abi/EulerRouter";
@@ -10,7 +10,8 @@ import abiSwapVerifier from "../abi/SwapVerifier";
 import abiPermit2 from "../abi/Permit2";
 import abiPythProxy from "../abi/PythProxy";
 import abiTrackingRewardStreams from "../abi/TrackingRewardSteams";
-import { AddressMetadata, AddressMetadataMap } from "./types";
+import abiFeeFlowController from "../abi/FeeFlowController";
+import type { AddressMetadata, AddressMetadataMap } from "./types";
 
 export const ethereumClient = createPublicClient({
   chain: mainnet,
@@ -27,6 +28,7 @@ export const abi = [
   ...abiPermit2,
   ...abiPythProxy,
   ...abiTrackingRewardStreams,
+  ...abiFeeFlowController,
 ];
 
 function extractFunctionNames(a: Abi): string[] {
@@ -72,6 +74,10 @@ export const initAddressMetadataMap: AddressMetadataMap<AddressMetadata> = {
   "0xae26485ACDDeFd486Fe9ad7C2b34169d360737c7": {
     kind: "global",
     label: "Swap Verifier",
+  },
+  "0xFcd3Db06EA814eB21C84304fC7F90798C00D1e32": {
+    kind: "global",
+    label: "Fee Flow Controller",
   },
   "0x0000000000000000000000000000000000000348": {
     kind: "token",
