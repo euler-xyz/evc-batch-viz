@@ -1,27 +1,16 @@
-import {
-  Flex,
-  FormControl,
-  FormLabel,
-  Heading,
-  HStack,
-  Switch,
-  Text,
-} from "@chakra-ui/react";
-import {
-  AddressMetadata,
-  AddressMetadataMap,
-  DecodedEVCCall,
-} from "../lib/types";
+import { Flex, Heading, HStack, Switch, Text } from "@chakra-ui/react";
+import { DecodedEVCCall } from "../lib/types";
 import ItemBox from "./ItemBox";
 import { useState } from "react";
+import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   items: DecodedEVCCall[];
-  metadata: AddressMetadataMap<AddressMetadata>;
 };
 
-function BatchBox({ items, metadata }: Props) {
+function BatchBox({ items }: Props) {
   const [isAdvancedMode, setAdvancedMode] = useState<boolean>(true);
+  const { metadata } = useAddressMetadata();
 
   return (
     <Flex direction="column" gap={2}>
@@ -42,13 +31,7 @@ function BatchBox({ items, metadata }: Props) {
         </HStack>
       </Flex>
       {items.map((item, i) => (
-        <ItemBox
-          key={i}
-          item={item}
-          i={i}
-          metadata={metadata}
-          isAdvancedMode={isAdvancedMode}
-        />
+        <ItemBox key={i} item={item} i={i} isAdvancedMode={isAdvancedMode} />
       ))}
     </Flex>
   );

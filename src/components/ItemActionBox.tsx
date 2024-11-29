@@ -1,51 +1,41 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react";
 import { Address, maxUint256 } from "viem";
 import AddressValue from "./values/AddressValue";
-import {
-  DecodedEVCCall,
-  AddressMetadataMap,
-  AddressMetadata,
-} from "../lib/types";
+import { DecodedEVCCall } from "../lib/types";
+import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   i: number;
   item: DecodedEVCCall;
-  metadata: AddressMetadataMap<AddressMetadata>;
 };
 
-function ItemActionBox({ i, item, metadata }: Props) {
+function ItemActionBox({ i, item }: Props) {
+  const { metadata } = useAddressMetadata();
   const { functionName, args } = item.decoded;
 
   function getContent() {
-    const target = (
-      <AddressValue
-        a={item.targetContract}
-        metadata={metadata[item.targetContract]}
-      />
-    );
+    const target = <AddressValue a={item.targetContract} />;
     if (functionName === "setLTV") {
       return (
         <Text>
           Set {target} LTVs to ({args[1] / 100}%, {args[2] / 100}%) for
-          collateral <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          collateral <AddressValue a={args[0]} />
         </Text>
       );
     }
     if (functionName === "setInterestRateModel") {
       return (
         <Text>
-          Set {target} IRM to{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          Set {target} IRM to <AddressValue a={args[0]} />
         </Text>
       );
     }
     if (functionName === "govSetConfig") {
       return (
         <Text>
-          Configure {target} to use{" "}
-          <AddressValue a={args[2]} metadata={metadata[args[2]]} /> for{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />/
-          <AddressValue a={args[1]} metadata={metadata[args[1]]} />
+          Configure {target} to use <AddressValue a={args[2]} /> for{" "}
+          <AddressValue a={args[0]} />/
+          <AddressValue a={args[1]} />
         </Text>
       );
     }
@@ -53,23 +43,21 @@ function ItemActionBox({ i, item, metadata }: Props) {
       return (
         <Text>
           Configure {target} to {!args[1] && "not"} resolve{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} /> as a vault
+          <AddressValue a={args[0]} /> as a vault
         </Text>
       );
     }
     if (functionName === "govSetFallbackOracle") {
       return (
         <Text>
-          Set {target} fallback oracle to{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          Set {target} fallback oracle to <AddressValue a={args[0]} />
         </Text>
       );
     }
     if (functionName === "transferGovernance") {
       return (
         <Text>
-          Transfer {target} governance to{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          Transfer {target} governance to <AddressValue a={args[0]} />
         </Text>
       );
     }
@@ -90,16 +78,14 @@ function ItemActionBox({ i, item, metadata }: Props) {
     if (functionName === "setFeeReceiver") {
       return (
         <Text>
-          Set {target} fee receiver to{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          Set {target} fee receiver to <AddressValue a={args[0]} />
         </Text>
       );
     }
     if (functionName === "setGovernorAdmin") {
       return (
         <Text>
-          Set {target} governor admin to{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          Set {target} governor admin to <AddressValue a={args[0]} />
         </Text>
       );
     }
@@ -127,8 +113,7 @@ function ItemActionBox({ i, item, metadata }: Props) {
     if (functionName === "setHookConfig") {
       return (
         <Text>
-          Set {target} hook target to{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          Set {target} hook target to <AddressValue a={args[0]} />
         </Text>
       );
     }
@@ -138,8 +123,7 @@ function ItemActionBox({ i, item, metadata }: Props) {
     if (functionName === "perspectiveVerify") {
       return (
         <Text>
-          Verify {target} against perspective{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} />
+          Verify {target} against perspective <AddressValue a={args[0]} />
         </Text>
       );
     }
@@ -156,10 +140,8 @@ function ItemActionBox({ i, item, metadata }: Props) {
       const amount = args[1].details.amount as bigint;
       return (
         <Text>
-          Approve <AddressValue a={spender} metadata={metadata[spender]} /> to
-          spend {amount.toString()}{" "}
-          <AddressValue a={token} metadata={metadata[token]} /> on behalf of{" "}
-          <AddressValue a={owner} metadata={metadata[owner]} />
+          Approve <AddressValue a={spender} /> to spend {amount.toString()}{" "}
+          <AddressValue a={token} /> on behalf of <AddressValue a={owner} />
         </Text>
       );
     }
@@ -171,9 +153,8 @@ function ItemActionBox({ i, item, metadata }: Props) {
     if (functionName === "enableCollateral") {
       return (
         <Text>
-          Enable <AddressValue a={args[1]} metadata={metadata[args[1]]} /> as
-          collateral for{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} /> on {target}
+          Enable <AddressValue a={args[1]} /> as collateral for{" "}
+          <AddressValue a={args[0]} /> on {target}
         </Text>
       );
     }
@@ -181,9 +162,8 @@ function ItemActionBox({ i, item, metadata }: Props) {
     if (functionName === "disableCollateral") {
       return (
         <Text>
-          Disable <AddressValue a={args[1]} metadata={metadata[args[1]]} /> as
-          collateral for{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} /> on {target}
+          Disable <AddressValue a={args[1]} /> as collateral for{" "}
+          <AddressValue a={args[0]} /> on {target}
         </Text>
       );
     }
@@ -191,9 +171,8 @@ function ItemActionBox({ i, item, metadata }: Props) {
     if (functionName === "enableController") {
       return (
         <Text>
-          Enable <AddressValue a={args[1]} metadata={metadata[args[1]]} /> as
-          controller for{" "}
-          <AddressValue a={args[0]} metadata={metadata[args[0]]} /> on {target}
+          Enable <AddressValue a={args[1]} /> as controller for{" "}
+          <AddressValue a={args[0]} /> on {target}
         </Text>
       );
     }
@@ -214,15 +193,11 @@ function ItemActionBox({ i, item, metadata }: Props) {
         <Text>
           Deposit {amount}{" "}
           {metadata[item.targetContract]?.asset ? (
-            <AddressValue
-              a={metadata[item.targetContract].asset}
-              metadata={metadata[metadata[item.targetContract].asset]}
-            />
+            <AddressValue a={metadata[item.targetContract].asset} />
           ) : (
             ""
           )}{" "}
-          for <AddressValue a={args[1]} metadata={metadata[args[1]]} /> into{" "}
-          {target}
+          for <AddressValue a={args[1]} /> into {target}
         </Text>
       );
     }
@@ -232,7 +207,7 @@ function ItemActionBox({ i, item, metadata }: Props) {
     //   return (
     //     <Text>
     //       Borrow {amount} {metadata[args[1]]?.asset ?? ""}{" "}
-    //       <AddressValue a={args[1]} metadata={metadata[args[1]]} /> from{" "}
+    //       <AddressValue a={args[1]}  /> from{" "}
     //       {target}
     //     </Text>
     //   );
@@ -243,7 +218,7 @@ function ItemActionBox({ i, item, metadata }: Props) {
     //   return (
     //     <Text>
     //       Withdraw {amount} {metadata[item.targetContract]?.asset ?? ""}{" "}
-    //       <AddressValue a={args[1]} metadata={metadata[args[1]]} /> from{" "}
+    //       <AddressValue a={args[1]}  /> from{" "}
     //       {target}
     //     </Text>
     //   );

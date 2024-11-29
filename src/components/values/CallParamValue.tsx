@@ -1,24 +1,21 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { type AbiParameter, type Address, decodeFunctionData } from "viem";
 import AddressValue from "./AddressValue";
-import type {
-  AddressMetadataMap,
-  AddressMetadata,
-  DecodedItem,
-} from "../../lib/types";
+import type { DecodedItem } from "../../lib/types";
 import Swapper from "../../abi/Swapper";
 import CallBox from "../CallBox";
 import FeeFlowController from "../../abi/FeeFlowController";
 import { Key } from "react";
+import { useAddressMetadata } from "../../context/AddressContext";
 
 type Props = {
   param: AbiParameter;
   arg: any;
-  metadata: AddressMetadataMap<AddressMetadata>;
 };
 
-function CallParamValue({ param, arg, metadata }: Props) {
+function CallParamValue({ param, arg }: Props) {
   const name = param?.name?.toString() ?? "<anonymous>";
+  const { metadata } = useAddressMetadata();
 
   return (
     <Box>
@@ -39,13 +36,7 @@ function CallParamValue({ param, arg, metadata }: Props) {
                     });
 
                     return (
-                      <CallBox
-                        key={i}
-                        i={i}
-                        decoded={decodedItem}
-                        metadata={metadata}
-                        data={el}
-                      />
+                      <CallBox key={i} i={i} decoded={decodedItem} data={el} />
                     );
                   } catch (e) {
                     console.error(e);
@@ -59,12 +50,7 @@ function CallParamValue({ param, arg, metadata }: Props) {
         }
 
         if (param.type === "address") {
-          return (
-            <AddressValue
-              a={arg as Address}
-              metadata={metadata[arg as Address]}
-            />
-          );
+          return <AddressValue a={arg as Address} />;
         }
 
         if (param.type === "tuple") {
@@ -78,7 +64,6 @@ function CallParamValue({ param, arg, metadata }: Props) {
                       key={i}
                       param={paramComponent}
                       arg={arg[paramComponent.name]}
-                      metadata={metadata}
                     />
                   )
                 )}

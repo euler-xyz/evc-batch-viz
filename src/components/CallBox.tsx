@@ -1,28 +1,22 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { AddressMetadata, AddressMetadataMap, DecodedItem } from "../lib/types";
+import { DecodedItem } from "../lib/types";
 import AddressValue from "./values/AddressValue";
 import { abi } from "../lib/constants";
 import { AbiParameter, Address, Hex, slice, toFunctionSelector } from "viem";
 import CallParamValue from "./values/CallParamValue";
 import { ReactNode } from "react";
+import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   targetContract?: Address;
   data: Hex;
   decoded: DecodedItem;
   i: number;
-  metadata: AddressMetadataMap<AddressMetadata>;
   children?: ReactNode;
 };
 
-function CallBox({
-  decoded,
-  i,
-  metadata,
-  targetContract,
-  data,
-  children,
-}: Props) {
+function CallBox({ decoded, i, targetContract, data, children }: Props) {
+  const { metadata } = useAddressMetadata();
   const { args } = decoded;
 
   const signature = slice(data, 0, 4);
@@ -50,11 +44,7 @@ function CallBox({
         </Box>{" "}
         {targetContract && (
           <>
-            <AddressValue
-              a={targetContract}
-              metadata={metadata[targetContract]}
-            />
-            .
+            <AddressValue a={targetContract} />.
           </>
         )}
         {decoded.functionName}(
@@ -64,7 +54,7 @@ function CallBox({
               const param = inputParams[i];
               return (
                 <Text key={i}>
-                  <CallParamValue param={param} arg={arg} metadata={metadata} />
+                  <CallParamValue param={param} arg={arg} />
                 </Text>
               );
             })}

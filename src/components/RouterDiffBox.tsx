@@ -16,15 +16,16 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa6";
+import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   address: Address;
   routerDiff: RouterDiff;
-  metadata: AddressMetadataMap<AddressMetadata>;
 };
 
-function RouterDiffBox({ address, routerDiff, metadata }: Props) {
+function RouterDiffBox({ address, routerDiff }: Props) {
   const { isOpen, onToggle } = useDisclosure();
+  const { metadata } = useAddressMetadata();
 
   return (
     <Flex
@@ -37,8 +38,7 @@ function RouterDiffBox({ address, routerDiff, metadata }: Props) {
     >
       <Flex direction="row" gap={2} align="center">
         <Text fontSize="lg">
-          Router{" "}
-          <AddressValue a={address as Address} metadata={metadata[address]} />
+          Router <AddressValue a={address as Address} />
         </Text>
         <IconButton
           onClick={onToggle}
@@ -54,11 +54,7 @@ function RouterDiffBox({ address, routerDiff, metadata }: Props) {
               if (key === "fallbackOracle") {
                 return (
                   <Text>
-                    {key} &rarr;{" "}
-                    <AddressValue
-                      a={value as Address}
-                      metadata={metadata[value as Address]}
-                    />
+                    {key} &rarr; <AddressValue a={value as Address} />
                   </Text>
                 );
               } else if (key === "configs") {
@@ -68,20 +64,10 @@ function RouterDiffBox({ address, routerDiff, metadata }: Props) {
                       return (
                         <Text key={i}>
                           Configure oracle{" "}
-                          <AddressValue
-                            a={configDiff.oracle}
-                            metadata={metadata[configDiff.oracle]}
-                          />{" "}
-                          to resolve{" "}
-                          <AddressValue
-                            a={configDiff.base}
-                            metadata={metadata[configDiff.base]}
-                          />
+                          <AddressValue a={configDiff.oracle} /> to resolve{" "}
+                          <AddressValue a={configDiff.base} />
                           /
-                          <AddressValue
-                            a={configDiff.quote}
-                            metadata={metadata[configDiff.quote]}
-                          />
+                          <AddressValue a={configDiff.quote} />
                         </Text>
                       );
                     })}
@@ -95,11 +81,8 @@ function RouterDiffBox({ address, routerDiff, metadata }: Props) {
                         return (
                           <Text key={i}>
                             {resolvedVaultDiff.set ? "Enable" : "Disable"}{" "}
-                            <AddressValue
-                              a={resolvedVaultDiff.vault}
-                              metadata={metadata[resolvedVaultDiff.vault]}
-                            />{" "}
-                            as a resolved vault.
+                            <AddressValue a={resolvedVaultDiff.vault} /> as a
+                            resolved vault.
                           </Text>
                         );
                       }

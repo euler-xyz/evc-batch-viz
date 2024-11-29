@@ -7,15 +7,16 @@ import {
 import AddressValue from "./values/AddressValue";
 import ItemActionBox from "./ItemActionBox";
 import CallBox from "./CallBox";
+import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   item: DecodedEVCCall;
   i: number;
-  metadata: AddressMetadataMap<AddressMetadata>;
   isAdvancedMode: boolean;
 };
 
-function ItemBox({ item, i, metadata, isAdvancedMode }: Props) {
+function ItemBox({ item, i, isAdvancedMode }: Props) {
+  const { metadata } = useAddressMetadata();
   if (!item.decoded) {
     return (
       <Flex
@@ -32,10 +33,7 @@ function ItemBox({ item, i, metadata, isAdvancedMode }: Props) {
             </Box>{" "}
             <Box as="span">
               {"<"}
-              <AddressValue
-                a={item.targetContract}
-                metadata={metadata[item.targetContract]}
-              />
+              <AddressValue a={item.targetContract} />
               {">"}.
             </Box>
             <Box as="span" fontStyle="italic">
@@ -48,25 +46,20 @@ function ItemBox({ item, i, metadata, isAdvancedMode }: Props) {
   }
 
   return !isAdvancedMode ? (
-    <ItemActionBox i={i} item={item} metadata={metadata} />
+    <ItemActionBox i={i} item={item} />
   ) : (
     <CallBox
       data={item.data}
       decoded={item.decoded}
       i={i}
       targetContract={item.targetContract}
-      metadata={metadata}
     >
       <>
         ,{" "}
         <Box as="span" color="gray.500" fontStyle="italic">
           onBehalfOf=
         </Box>
-        <AddressValue
-          a={item.onBehalfOfAccount}
-          metadata={metadata[item.onBehalfOfAccount]}
-        />
-        ,{" "}
+        <AddressValue a={item.onBehalfOfAccount} />,{" "}
         <Box as="span" color="gray.500" fontStyle="italic">
           value=
         </Box>

@@ -1,11 +1,5 @@
 import { Address } from "viem";
-import {
-  AddressMetadata,
-  AddressMetadataMap,
-  LTVDiff,
-  VaultDiff,
-  VaultMetadata,
-} from "../lib/types";
+import { LTVDiff, VaultDiff } from "../lib/types";
 import AddressValue from "./values/AddressValue";
 import CapValue from "./values/CapValue";
 import LTVValue from "./values/LTVValue";
@@ -18,15 +12,16 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa6";
+import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   address: Address;
   vaultDiff: VaultDiff;
-  metadata: AddressMetadataMap<VaultMetadata>;
 };
 
-function VaultDiffBox({ address, vaultDiff, metadata }: Props) {
+function VaultDiffBox({ address, vaultDiff }: Props) {
   const { isOpen, onToggle } = useDisclosure();
+  const { metadata } = useAddressMetadata();
 
   return (
     <Flex
@@ -38,7 +33,7 @@ function VaultDiffBox({ address, vaultDiff, metadata }: Props) {
       p={2}
     >
       <Flex direction="row" gap={2} align="center">
-        <AddressValue a={address as Address} metadata={metadata[address]} />
+        <AddressValue a={address as Address} />
         <IconButton
           onClick={onToggle}
           size="xs"
@@ -63,11 +58,7 @@ function VaultDiffBox({ address, vaultDiff, metadata }: Props) {
               ) {
                 return (
                   <Text>
-                    {key} &rarr;{" "}
-                    <AddressValue
-                      a={value as Address}
-                      metadata={metadata[value as Address]}
-                    />
+                    {key} &rarr; <AddressValue a={value as Address} />
                   </Text>
                 );
               } else if (key === "ltvs") {
@@ -76,11 +67,7 @@ function VaultDiffBox({ address, vaultDiff, metadata }: Props) {
                     {(value as LTVDiff[]).map((ltvDiff, i) => {
                       return (
                         <Text key={i}>
-                          setLTV{" "}
-                          <AddressValue
-                            a={ltvDiff.collateral}
-                            metadata={metadata[ltvDiff.collateral as Address]}
-                          />
+                          setLTV <AddressValue a={ltvDiff.collateral} />
                           : borrowLTV=
                           <LTVValue ltv={ltvDiff.borrowLTV} />, liquidationLTV=
                           <LTVValue ltv={ltvDiff.liquidationLTV} />,

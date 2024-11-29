@@ -1,5 +1,4 @@
-import { Address, Hash, Hex, parseAbi } from "viem";
-import { ethereumClient } from "./constants";
+import { Address, Hash, Hex, parseAbi, PublicClient } from "viem";
 import {
   AddressMetadataMap,
   OracleMetadata,
@@ -8,9 +7,10 @@ import {
 } from "./types";
 
 export async function indexOracles(
-  addresses: Address[]
+  addresses: Address[],
+  client: PublicClient
 ): Promise<AddressMetadataMap<OracleMetadata>> {
-  const callResults = await ethereumClient.multicall({
+  const callResults = await client.multicall({
     contracts: addresses.flatMap((address) => [
       {
         address,
@@ -39,9 +39,10 @@ export async function indexOracles(
 }
 
 export async function indexVaults(
-  addresses: Address[]
+  addresses: Address[],
+  client: PublicClient
 ): Promise<AddressMetadataMap<VaultMetadata>> {
-  const callResults = await ethereumClient.multicall({
+  const callResults = await client.multicall({
     contracts: addresses.flatMap((address) => [
       {
         address,
@@ -77,9 +78,10 @@ export async function indexVaults(
 }
 
 export async function indexTokens(
-  addresses: Address[]
+  addresses: Address[],
+  client: PublicClient
 ): Promise<AddressMetadataMap<TokenMetadata>> {
-  const callResults = await ethereumClient.multicall({
+  const callResults = await client.multicall({
     contracts: addresses.flatMap((address) => [
       {
         address,
@@ -122,7 +124,10 @@ export async function indexTokens(
   return metadataMap;
 }
 
-export async function getTxCalldata(hash: Hash): Promise<Hex> {
-  const tx = await ethereumClient.getTransaction({ hash });
+export async function getTxCalldata(
+  hash: Hash,
+  client: PublicClient
+): Promise<Hex> {
+  const tx = await client.getTransaction({ hash });
   return tx.input;
 }

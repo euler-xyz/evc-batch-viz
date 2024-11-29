@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 
 import { decodeEVCBatch } from "./lib/decode";
 import safeTx1 from "./assets/safe_tx1.json";
-import {
-  AddressMetadata,
-  AddressMetadataMap,
-  type DecodedEVCCall,
-} from "./lib/types";
+import { type DecodedEVCCall } from "./lib/types";
 import { Address, Hash } from "viem";
 import {
   getTxCalldata,
@@ -24,24 +20,34 @@ import {
   Flex,
   Heading,
   Input,
+  Select,
   Spacer,
   Textarea,
+  Text,
 } from "@chakra-ui/react";
 import ErrorBox from "./components/ErrorBox";
 import {
   eulerRouterFunctionNames,
   eVaultFunctionNames,
   initAddressMetadataMap,
+  supportedChains,
 } from "./lib/constants";
+import { base, mainnet } from "viem/chains";
+import { useAddressMetadata } from "./context/AddressContext";
+import { chainConfig } from "viem/zksync";
+import { useChainConfig } from "./context/ChainContext";
 
 function App() {
   const [text, setText] = useState<string>("");
   const [txHash, setTxHash] = useState<string>("");
   const [error, setError] = useState<string>();
   const [items, setItems] = useState<DecodedEVCCall[]>();
-  const [addressMetadata, setAddressMetadata] = useState<
-    AddressMetadataMap<AddressMetadata>
-  >(initAddressMetadataMap);
+  const { metadata, setMetadata } = useAddressMetadata();
+  const { chain, setChain } = useChainConfig();
+
+  useEffect(() => {
+    setMetadata(initAddressMetadataMap(chain.id));
+  }, [chain]);
 
   const doDecode = () => {
     setError(undefined);
@@ -66,7 +72,7 @@ function App() {
     setItems(undefined);
 
     try {
-      const txCalldata = await getTxCalldata(txHash as Hash);
+      const txCalldata = await getTxCalldata(txHash as Hash, chain.client);
       setText(txCalldata);
     } catch (e: any) {
       console.error(e);
@@ -97,6 +103,19 @@ function App() {
         oracleAddresses.add(call.targetContract);
       }
 
+      if (
+        metadata[call.targetContract]?.kind === "global" &&
+        metadata[call.targetContract]?.label === "Oracle Adapter Registry"
+      ) {
+        if (f === "add") {
+          oracleAddresses.add(call.decoded.args[0]);
+          tokenAddresses.add(call.decoded.args[1]);
+          tokenAddresses.add(call.decoded.args[2]);
+        } else if (f === "revoke") {
+          oracleAddresses.add(call.decoded.args[0]);
+        }
+      }
+
       if (f === "govSetConfig") {
         tokenAddresses.add(call.decoded.args[0]);
         tokenAddresses.add(call.decoded.args[1]);
@@ -110,12 +129,12 @@ function App() {
 
     (async () => {
       const [oracleMap, vaultMap, tokenMap] = await Promise.all([
-        indexOracles(Array.from(oracleAddresses)),
-        indexVaults(Array.from(vaultAddresses)),
-        indexTokens(Array.from(tokenAddresses)),
+        indexOracles(Array.from(oracleAddresses), chain.client),
+        indexVaults(Array.from(vaultAddresses), chain.client),
+        indexTokens(Array.from(tokenAddresses), chain.client),
       ]);
 
-      setAddressMetadata((prev) => ({
+      setMetadata((prev) => ({
         ...prev,
         ...{ ...oracleMap, ...tokenMap, ...vaultMap },
       }));
@@ -127,7 +146,22 @@ function App() {
   return (
     <Box px={6} py={6}>
       <Flex direction="column" gap={4}>
-        <Heading>🧙‍♂️ EVC Batch Viz</Heading>
+        <Flex direction="row" align="center" justify="space-between">
+          <Heading>🧙‍♂️ EVC Batch Viz</Heading>
+          <Flex direction="row" align="center" gap={2}>
+            <Text fontWeight="bold">Chain</Text>
+            <Select
+              maxW="12rem"
+              onChange={(e) => {
+                e.preventDefault();
+                setChain(supportedChains[+e.target.value]);
+              }}
+            >
+              <option value={mainnet.id}>Ethereum</option>
+              <option value={base.id}>Base</option>
+            </Select>
+          </Flex>
+        </Flex>
 
         <Textarea
           placeholder="Encoded batch"
@@ -163,9 +197,9 @@ function App() {
 
         {error && <ErrorBox msg={error} />}
 
-        {diffs && <DiffsBox diffs={diffs} metadata={addressMetadata} />}
+        {diffs && <DiffsBox diffs={diffs} />}
 
-        {items && <BatchBox items={items} metadata={addressMetadata} />}
+        {items && <BatchBox items={items} />}
       </Flex>
     </Box>
   );

@@ -2,6 +2,7 @@ import {
   Address,
   DecodeFunctionDataParameters,
   DecodeFunctionDataReturnType,
+  PublicClient,
 } from "viem";
 import { abi } from "./constants";
 
@@ -240,4 +241,38 @@ export type RouterDiff = {
 export type Diffs = {
   vaults: { [address: Address]: VaultDiff };
   routers: { [address: Address]: RouterDiff };
+};
+
+export type CoreAddresses = {
+  balanceTracker: Address;
+  eVaultFactory: Address;
+  eVaultFactoryGovernor: Address;
+  eVaultImplementation: Address;
+  evc: Address;
+  permit2: Address;
+  protocolConfig: Address;
+  sequenceRegistry: Address;
+};
+
+export type PeripheryAddresses = {
+  escrowedCollateralPerspective: Address;
+  eulerUngoverned0xPerspective: Address;
+  eulerUngovernedNzxPerspective: Address;
+  evkFactoryPerspective: Address;
+  externalVaultRegistry: Address;
+  feeFlowController: Address;
+  governedPerspective: Address;
+  irmRegistry: Address;
+  kinkIRMFactory: Address;
+  oracleAdapterRegistry: Address;
+  oracleRouterFactory: Address;
+  swapVerifier: Address;
+  swapper: Address;
+  termsOfUseSigner: Address;
+};
+
+export type ChainConfig = {
+  id: number;
+  explorerUrl: String;
+  client: PublicClient;
 };
