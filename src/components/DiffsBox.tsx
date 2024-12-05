@@ -1,15 +1,12 @@
 import { Address } from "viem";
-import { AddressMetadataMap, Diffs, VaultMetadata } from "../lib/types";
+import { Diffs } from "../lib/types";
 import { Flex, Heading } from "@chakra-ui/react";
 import VaultDiffBox from "./VaultDiffBox";
 import RouterDiffBox from "./RouterDiffBox";
-import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = { diffs: Diffs };
 
 function DiffsBox({ diffs }: Props) {
-  const { metadata } = useAddressMetadata<VaultMetadata>();
-
   return (
     <Flex direction="column" gap={4}>
       <Heading size="lg">Changes</Heading>

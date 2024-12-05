@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 
 import { decodeEVCBatch } from "./lib/decode";
 import safeTx1 from "./assets/safe_tx1.json";
+import safeTxGov from "./assets/safe_tx_gov.json";
 import { type DecodedEVCCall } from "./lib/types";
-import { Address, Hash } from "viem";
+import { Address, checksumAddress, Hash } from "viem";
 import {
   getTxCalldata,
   indexTokens,
@@ -97,15 +98,26 @@ function App() {
       const f = call.decoded?.functionName;
       if (!f) return;
 
+      let targetContract = call.targetContract;
+
+      const targetIsGAC =
+        targetContract &&
+        metadata[targetContract]?.kind === "global" &&
+        metadata[targetContract].label.includes("DAO Governor Access Control");
+
+      if (targetIsGAC) {
+        targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
+      }
+
       if (eVaultFunctionNames.includes(f)) {
-        vaultAddresses.add(call.targetContract);
+        vaultAddresses.add(targetContract);
       } else if (eulerRouterFunctionNames.includes(f)) {
-        oracleAddresses.add(call.targetContract);
+        oracleAddresses.add(targetContract);
       }
 
       if (
-        metadata[call.targetContract]?.kind === "global" &&
-        metadata[call.targetContract]?.label === "Oracle Adapter Registry"
+        metadata[targetContract]?.kind === "global" &&
+        metadata[targetContract]?.label === "Oracle Adapter Registry"
       ) {
         if (f === "add") {
           oracleAddresses.add(call.decoded.args[0]);
@@ -179,6 +191,9 @@ function App() {
               </Button>
               <Button colorScheme="blue" onClick={() => loadPayload(safeTx1)}>
                 Load Example
+              </Button>
+              <Button colorScheme="blue" onClick={() => loadPayload(safeTxGov)}>
+                Load Gov Example
               </Button>
             </ButtonGroup>
           </Flex>

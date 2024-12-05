@@ -1,4 +1,11 @@
-import { type Abi, Chain, createPublicClient, http, PublicClient } from "viem";
+import {
+  type Abi,
+  Chain,
+  createPublicClient,
+  getAddress,
+  http,
+  PublicClient,
+} from "viem";
 import { base, mainnet } from "viem/chains";
 
 import abiEulerRouter from "../abi/EulerRouter";
@@ -18,12 +25,14 @@ import type {
   ChainConfig,
   CoreAddresses,
   PeripheryAddresses,
+  VaultGovernorAddresses,
 } from "./types";
 
 import coreAddresses_1 from "../../euler-interfaces/addresses/1/CoreAddresses.json";
 import peripheryAddresses_1 from "../../euler-interfaces/addresses/1/PeripheryAddresses.json";
 import coreAddresses_8453 from "../../euler-interfaces/addresses/8453/CoreAddresses.json";
 import peripheryAddresses_8453 from "../../euler-interfaces/addresses/8453/PeripheryAddresses.json";
+import vaultGovernorAddresses_8453 from "../../euler-interfaces/addresses/8453/VaultGovernorAddresses.json";
 
 export const abi = [
   ...abiEvc,
@@ -43,6 +52,7 @@ const globalAddresses: {
   [chainId: number]: {
     core: CoreAddresses;
     periphery: PeripheryAddresses;
+    vaultGovernor?: VaultGovernorAddresses;
   };
 } = {
   1: {
@@ -52,6 +62,7 @@ const globalAddresses: {
   8453: {
     core: coreAddresses_8453 as CoreAddresses,
     periphery: peripheryAddresses_8453 as PeripheryAddresses,
+    vaultGovernor: vaultGovernorAddresses_8453 as VaultGovernorAddresses,
   },
 };
 
@@ -92,8 +103,9 @@ function loadDeploymentAddresses(
 ): AddressMetadataMap<AddressMetadata> {
   const coreAddresses = globalAddresses[chainId].core;
   const peripheryAddresses = globalAddresses[chainId].periphery;
+  const vaultGovernorAddresses = globalAddresses[chainId].vaultGovernor;
 
-  return {
+  const a: AddressMetadataMap<AddressMetadata> = {
     [coreAddresses.balanceTracker]: {
       kind: "global",
       label: "Balance Tracker",
@@ -183,6 +195,15 @@ function loadDeploymentAddresses(
       label: "Terms of Use Signer",
     },
   };
+
+  if (vaultGovernorAddresses) {
+    a[getAddress(vaultGovernorAddresses.eulerDaoGovernor)] = {
+      kind: "global",
+      label: "DAO Governor Access Control",
+    };
+  }
+
+  return a;
 }
 
 const designatorTokens: AddressMetadataMap<AddressMetadata> = {
@@ -212,9 +233,57 @@ export function initAddressMetadataMap(
   return {
     ...loadDeploymentAddresses(chainId),
     ...designatorTokens,
+    "0xEe009FAF00CF54C1B4387829aF7A8Dc5f0c8C8C5": {
+      kind: "global",
+      label: "Euler Deployer (Ethereum)",
+    },
     "0xcAD001c30E96765aC90307669d578219D4fb1DCe": {
       kind: "global",
-      label: "Euler Multisig",
+      label: "Euler DAO Treasury Multisig (Ethereum)",
+    },
+    "0xB1345E7A4D35FB3E6bF22A32B3741Ae74E5Fba27": {
+      kind: "global",
+      label: "Euler Labs Ops Multisig (Ethereum)",
+    },
+    "0xb3b84e8320250Afe7a5fb313Ee32B52982b73c53": {
+      kind: "global",
+      label: "Euler Security Council Multisig (Ethereum)",
+    },
+    "0x8731765b635D5Dc45159f0A2C7D748C3927d68a6": {
+      kind: "global",
+      label: "Euler Deployer (Base)",
+    },
+    "0x1e13B0847808045854Ddd908F2d770Dc902Dcfb8": {
+      kind: "global",
+      label: "Euler DAO Treasury Multisig (Base)",
+    },
+    "0x33C71422B3E20ef2472Bc9aa9252220CAeAF207e": {
+      kind: "global",
+      label: "Euler Labs Ops Multisig (Base)",
+    },
+    "0x5a3f0c8BC2ab1d35c5E7e9e98757CF2Ed762BC73": {
+      kind: "global",
+      label: "Euler Security Council Multisig (Base)",
+    },
+    "0x223c87de4e41448adfDe6F4F93D9bD4DEA9d88d1": {
+      kind: "global",
+      label: "DAO Governor Access Control (Base)",
+    },
+    "0x5B13E9c627d4114E9bCd6755fF174A6a5017D364": {
+      kind: "global",
+      label: "Euler Deployer (Polygon)",
+    },
+    "0x6849230767A5C61C6b9eEfb0405f0FB707eF14E6": {
+      kind: "global",
+      label: "Euler DAO Treasury Multisig (Polygon)",
+    },
+    "0x12dFb66acf7c67E4ED0678a479B65eE31bd8f3d2": {
+      kind: "global",
+      label: "Euler Labs Ops Multisig (Polygon)",
+    },
+    "0x2D27adb58A2DF0c3cC838C3071623E905f7400fd": {
+      kind: "global",
+      label: "Euler Security Council Multisig (Polygon)",
     },
     "0x4305FB66699C3B2702D4d05CF36551390A4c69C6": {
       kind: "global",

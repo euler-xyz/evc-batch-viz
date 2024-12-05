@@ -1,13 +1,8 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import {
-  AddressMetadata,
-  AddressMetadataMap,
-  DecodedEVCCall,
-} from "../lib/types";
+import { DecodedEVCCall } from "../lib/types";
 import AddressValue from "./values/AddressValue";
 import ItemActionBox from "./ItemActionBox";
 import CallBox from "./CallBox";
-import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   item: DecodedEVCCall;
@@ -16,7 +11,6 @@ type Props = {
 };
 
 function ItemBox({ item, i, isAdvancedMode }: Props) {
-  const { metadata } = useAddressMetadata();
   if (!item.decoded) {
     return (
       <Flex

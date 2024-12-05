@@ -271,6 +271,10 @@ export type PeripheryAddresses = {
   termsOfUseSigner: Address;
 };
 
+export type VaultGovernorAddresses = {
+  eulerDaoGovernor: Address;
+};
+
 export type ChainConfig = {
   id: number;
   explorerUrl: String;

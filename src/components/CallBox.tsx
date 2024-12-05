@@ -2,7 +2,14 @@ import { Box, Flex, Text } from "@chakra-ui/react";
 import { DecodedItem } from "../lib/types";
 import AddressValue from "./values/AddressValue";
 import { abi } from "../lib/constants";
-import { AbiParameter, Address, Hex, slice, toFunctionSelector } from "viem";
+import {
+  AbiParameter,
+  Address,
+  checksumAddress,
+  Hex,
+  slice,
+  toFunctionSelector,
+} from "viem";
 import CallParamValue from "./values/CallParamValue";
 import { ReactNode } from "react";
 import { useAddressMetadata } from "../context/AddressContext";
@@ -25,6 +32,11 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
   );
 
   const inputParams = abiFunction?.inputs! as AbiParameter[];
+
+  const targetIsGAC =
+    targetContract &&
+    metadata[targetContract]?.kind === "global" &&
+    metadata[targetContract].label.includes("DAO Governor Access Control");
   return (
     <Flex
       direction="column"
@@ -42,10 +54,16 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
         <Box as="span" color="gray.500">
           #{i}
         </Box>{" "}
-        {targetContract && (
+        {targetIsGAC ? (
           <>
-            <AddressValue a={targetContract} />.
+            <AddressValue a={checksumAddress(`0x${data.slice(-40)}`)} />.
           </>
+        ) : (
+          targetContract && (
+            <>
+              <AddressValue a={targetContract} />.
+            </>
+          )
         )}
         {decoded.functionName}(
         {args && (
@@ -61,6 +79,15 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
           </Flex>
         )}
         ){children}
+        {targetIsGAC && (
+          <>
+            ,{" "}
+            <Box as="span" color="gray.500" fontStyle="italic">
+              proxy=
+            </Box>
+            <AddressValue a={targetContract} />
+          </>
+        )}
       </Text>
     </Flex>
   );

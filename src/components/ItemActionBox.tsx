@@ -1,5 +1,5 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react";
-import { Address, maxUint256 } from "viem";
+import { Address, checksumAddress, maxUint256 } from "viem";
 import AddressValue from "./values/AddressValue";
 import { DecodedEVCCall } from "../lib/types";
 import { useAddressMetadata } from "../context/AddressContext";
@@ -13,8 +13,19 @@ function ItemActionBox({ i, item }: Props) {
   const { metadata } = useAddressMetadata();
   const { functionName, args } = item.decoded;
 
+  let targetContract = item.targetContract;
+
+  const targetIsGAC =
+    targetContract &&
+    metadata[targetContract]?.kind === "global" &&
+    metadata[targetContract].label.includes("DAO Governor Access Control");
+
+  if (targetIsGAC) {
+    targetContract = checksumAddress(`0x${item.data.slice(-40)}`);
+  }
+
   function getContent() {
-    const target = <AddressValue a={item.targetContract} />;
+    const target = <AddressValue a={targetContract} />;
     if (functionName === "setLTV") {
       return (
         <Text>
@@ -132,7 +143,7 @@ function ItemActionBox({ i, item }: Props) {
     }
     if (
       functionName === "permit" &&
-      item.targetContract === "0x000000000022D473030F116dDEE9F6B43aC78BA3"
+      targetContract === "0x000000000022D473030F116dDEE9F6B43aC78BA3"
     ) {
       const owner = args[0] as Address;
       const spender = args[1].spender as Address;
@@ -179,21 +190,21 @@ function ItemActionBox({ i, item }: Props) {
 
     if (
       functionName === "disableController" &&
-      item.targetContract !== "0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383"
+      targetContract !== "0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383"
     ) {
       return <Text>Disable {target} as controller</Text>;
     }
 
     if (
       functionName === "deposit" &&
-      item.targetContract !== "0xbF893F7062FCcEB83d295e7FB407a64F941d5204"
+      targetContract !== "0xbF893F7062FCcEB83d295e7FB407a64F941d5204"
     ) {
       const amount = args[0] === maxUint256 ? "all" : args[0].toString();
       return (
         <Text>
           Deposit {amount}{" "}
-          {metadata[item.targetContract]?.asset ? (
-            <AddressValue a={metadata[item.targetContract].asset} />
+          {metadata[targetContract]?.asset ? (
+            <AddressValue a={metadata[targetContract].asset} />
           ) : (
             ""
           )}{" "}
