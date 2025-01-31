@@ -272,7 +272,9 @@ export type PeripheryAddresses = {
 };
 
 export type VaultGovernorAddresses = {
-  eulerDaoGovernor: Address;
+  accessControlEmergencyGovernor: Address;
+  eVaultFactoryGovernor: Address;
+  eVaultFactoryTimelockController: Address;
 };
 
 export type ChainConfig = {

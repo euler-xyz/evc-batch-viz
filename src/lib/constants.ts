@@ -25,14 +25,15 @@ import type {
   ChainConfig,
   CoreAddresses,
   PeripheryAddresses,
-  VaultGovernorAddresses,
+  GovernorAddresses,
 } from "./types";
 
 import coreAddresses_1 from "../../euler-interfaces/addresses/1/CoreAddresses.json";
 import peripheryAddresses_1 from "../../euler-interfaces/addresses/1/PeripheryAddresses.json";
+import governorAddresses_1 from "../../euler-interfaces/addresses/1/GovernorAddresses.json";
 import coreAddresses_8453 from "../../euler-interfaces/addresses/8453/CoreAddresses.json";
 import peripheryAddresses_8453 from "../../euler-interfaces/addresses/8453/PeripheryAddresses.json";
-import vaultGovernorAddresses_8453 from "../../euler-interfaces/addresses/8453/VaultGovernorAddresses.json";
+import governorAddresses_8453 from "../../euler-interfaces/addresses/8453/GovernorAddresses.json";
 
 export const abi = [
   ...abiEvc,
@@ -52,17 +53,18 @@ const globalAddresses: {
   [chainId: number]: {
     core: CoreAddresses;
     periphery: PeripheryAddresses;
-    vaultGovernor?: VaultGovernorAddresses;
+    vaultGovernor?: GovernorAddresses;
   };
 } = {
   1: {
     core: coreAddresses_1 as CoreAddresses,
     periphery: peripheryAddresses_1 as PeripheryAddresses,
+    vaultGovernor: governorAddresses_1 as VaultGovernorAddresses,
   },
   8453: {
     core: coreAddresses_8453 as CoreAddresses,
     periphery: peripheryAddresses_8453 as PeripheryAddresses,
-    vaultGovernor: vaultGovernorAddresses_8453 as VaultGovernorAddresses,
+    vaultGovernor: governorAddresses_8453 as VaultGovernorAddresses,
   },
 };
 
@@ -103,7 +105,7 @@ function loadDeploymentAddresses(
 ): AddressMetadataMap<AddressMetadata> {
   const coreAddresses = globalAddresses[chainId].core;
   const peripheryAddresses = globalAddresses[chainId].periphery;
-  const vaultGovernorAddresses = globalAddresses[chainId].vaultGovernor;
+  const governorAddresses = globalAddresses[chainId].accessControlEmergencyGovernor;
 
   const a: AddressMetadataMap<AddressMetadata> = {
     [coreAddresses.balanceTracker]: {
@@ -196,8 +198,8 @@ function loadDeploymentAddresses(
     },
   };
 
-  if (vaultGovernorAddresses) {
-    a[getAddress(vaultGovernorAddresses.eulerDaoGovernor)] = {
+  if (governorAddresses) {
+    a[getAddress(governorAddresses.accessControlEmergencyGovernor)] = {
       kind: "global",
       label: "DAO Governor Access Control",
     };
