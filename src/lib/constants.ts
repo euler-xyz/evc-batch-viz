@@ -30,9 +30,10 @@ import type {
 
 import coreAddresses_1 from "../../euler-interfaces/addresses/1/CoreAddresses.json";
 import peripheryAddresses_1 from "../../euler-interfaces/addresses/1/PeripheryAddresses.json";
+import vaultGovernorAddresses_1 from "../../euler-interfaces/addresses/1/GovernorAddresses.json";
 import coreAddresses_8453 from "../../euler-interfaces/addresses/8453/CoreAddresses.json";
 import peripheryAddresses_8453 from "../../euler-interfaces/addresses/8453/PeripheryAddresses.json";
-import vaultGovernorAddresses_8453 from "../../euler-interfaces/addresses/8453/VaultGovernorAddresses.json";
+import vaultGovernorAddresses_8453 from "../../euler-interfaces/addresses/8453/GovernorAddresses.json";
 
 export const abi = [
   ...abiEvc,
@@ -58,6 +59,7 @@ const globalAddresses: {
   1: {
     core: coreAddresses_1 as CoreAddresses,
     periphery: peripheryAddresses_1 as PeripheryAddresses,
+    vaultGovernor: vaultGovernorAddresses_1 as VaultGovernorAddresses,
   },
   8453: {
     core: coreAddresses_8453 as CoreAddresses,
@@ -197,7 +199,7 @@ function loadDeploymentAddresses(
   };
 
   if (vaultGovernorAddresses) {
-    a[getAddress(vaultGovernorAddresses.eulerDaoGovernor)] = {
+    a[getAddress(vaultGovernorAddresses.accessControlEmergencyGovernor)] = {
       kind: "global",
       label: "DAO Governor Access Control",
     };
