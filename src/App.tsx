@@ -171,6 +171,7 @@ function App() {
             >
               <option value={mainnet.id}>Ethereum</option>
               <option value={base.id}>Base</option>
+              <option value={1923}>Swell</option>
             </Select>
           </Flex>
         </Flex>

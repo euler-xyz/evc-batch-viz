@@ -5,6 +5,7 @@ import {
   getAddress,
   http,
   PublicClient,
+  defineChain,
 } from "viem";
 import { base, mainnet } from "viem/chains";
 
@@ -31,6 +32,9 @@ import type {
 import coreAddresses_1 from "../../euler-interfaces/addresses/1/CoreAddresses.json";
 import peripheryAddresses_1 from "../../euler-interfaces/addresses/1/PeripheryAddresses.json";
 import vaultGovernorAddresses_1 from "../../euler-interfaces/addresses/1/GovernorAddresses.json";
+import coreAddresses_1923 from "../../euler-interfaces/addresses/1923/CoreAddresses.json";
+import peripheryAddresses_1923 from "../../euler-interfaces/addresses/1923/PeripheryAddresses.json";
+import vaultGovernorAddresses_1923 from "../../euler-interfaces/addresses/1923/GovernorAddresses.json";
 import coreAddresses_8453 from "../../euler-interfaces/addresses/8453/CoreAddresses.json";
 import peripheryAddresses_8453 from "../../euler-interfaces/addresses/8453/PeripheryAddresses.json";
 import vaultGovernorAddresses_8453 from "../../euler-interfaces/addresses/8453/GovernorAddresses.json";
@@ -61,6 +65,11 @@ const globalAddresses: {
     periphery: peripheryAddresses_1 as PeripheryAddresses,
     vaultGovernor: vaultGovernorAddresses_1 as VaultGovernorAddresses,
   },
+  1923: {
+    core: coreAddresses_1923 as CoreAddresses,
+    periphery: peripheryAddresses_1923 as PeripheryAddresses,
+    vaultGovernor: vaultGovernorAddresses_1923 as VaultGovernorAddresses,
+  },
   8453: {
     core: coreAddresses_8453 as CoreAddresses,
     periphery: peripheryAddresses_8453 as PeripheryAddresses,
@@ -79,6 +88,33 @@ export const evcFunctionNames = extractFunctionNames(abiEvc);
 export const eVaultFunctionNames = extractFunctionNames(abiEVault);
 export const eulerRouterFunctionNames = extractFunctionNames(abiEulerRouter);
 
+
+const swellnetwork = defineChain({
+  id: 1923,
+  name: 'Swell',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://swell-mainnet.alt.technology'],
+      webSocket: ['wss://swell-mainnet.alt.technology'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.swellnetwork.io' },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xcA11bde05977b3631167028862bE2a173976CA11',
+      blockCreated: 1,
+    },
+  },
+});
+
+
 export const supportedChains: {
   [chainId: number]: ChainConfig;
 } = {
@@ -89,6 +125,14 @@ export const supportedChains: {
       chain: mainnet,
       transport: http("https://rpc.ankr.com/eth"),
     }),
+  },
+  [swellnetwork.id]: {
+    id: swellnetwork.id,
+    explorerUrl: "https://explorer.swellnetwork.io",
+    client: createPublicClient({
+      chain: swellnetwork,
+      transport: http("https://swell-mainnet.alt.technology"),
+    }) as PublicClient,
   },
   [base.id]: {
     id: base.id,
