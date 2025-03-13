@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { decodeEVCBatch } from "./lib/decode";
-import safeTx1 from "./assets/safe_tx1.json";
-import safeTxGov from "./assets/safe_tx_gov.json";
 import { type DecodedEVCCall } from "./lib/types";
 import { Address, checksumAddress, Hash } from "viem";
 import {
@@ -32,6 +30,7 @@ import {
   eVaultFunctionNames,
   initAddressMetadataMap,
   supportedChains,
+  supportedChainList,
 } from "./lib/constants";
 import { base, mainnet } from "viem/chains";
 import { useAddressMetadata } from "./context/AddressContext";
@@ -103,7 +102,8 @@ function App() {
       const targetIsGAC =
         targetContract &&
         metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract].label.includes("DAO Governor Access Control");
+        metadata[targetContract].label === 'governor/accessControlEmergencyGovernor'
+        ;
 
       if (targetIsGAC) {
         targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
@@ -117,7 +117,7 @@ function App() {
 
       if (
         metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract]?.label === "Oracle Adapter Registry"
+        metadata[targetContract]?.label === "periphery/oracleAdapterRegistry"
       ) {
         if (f === "add") {
           oracleAddresses.add(call.decoded.args[0]);
@@ -153,7 +153,7 @@ function App() {
     })();
   }, [items]);
 
-  const diffs = items ? getDiffs(items) : undefined;
+  const diffs = getDiffs(items);
 
   return (
     <Box px={6} py={6}>
@@ -169,9 +169,7 @@ function App() {
                 setChain(supportedChains[+e.target.value]);
               }}
             >
-              <option value={mainnet.id}>Ethereum</option>
-              <option value={base.id}>Base</option>
-              <option value={1923}>Swell</option>
+              {supportedChainList.map(c => <option value={c.chainId} key={c.chainId}>{c.name}</option>)}
             </Select>
           </Flex>
         </Flex>
@@ -189,12 +187,6 @@ function App() {
               </Button>
               <Button colorScheme="red" onClick={() => loadPayload({})}>
                 Clear
-              </Button>
-              <Button colorScheme="blue" onClick={() => loadPayload(safeTx1)}>
-                Load Example
-              </Button>
-              <Button colorScheme="blue" onClick={() => loadPayload(safeTxGov)}>
-                Load Gov Example
               </Button>
             </ButtonGroup>
           </Flex>
