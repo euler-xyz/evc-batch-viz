@@ -32,6 +32,7 @@ import {
   eVaultFunctionNames,
   initAddressMetadataMap,
   supportedChains,
+  supportedChainList,
 } from "./lib/constants";
 import { base, mainnet } from "viem/chains";
 import { useAddressMetadata } from "./context/AddressContext";
@@ -169,9 +170,7 @@ function App() {
                 setChain(supportedChains[+e.target.value]);
               }}
             >
-              <option value={mainnet.id}>Ethereum</option>
-              <option value={base.id}>Base</option>
-              <option value={1923}>Swell</option>
+              {supportedChainList.map(c => <option value={c.chainId} key={c.chainId}>{c.name}</option>)}
             </Select>
           </Flex>
         </Flex>

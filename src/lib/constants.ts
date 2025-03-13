@@ -7,7 +7,8 @@ import {
   PublicClient,
   defineChain,
 } from "viem";
-import { base, mainnet } from "viem/chains";
+import * as viemChains from "viem/chains";
+import eulerChains from "../../euler-interfaces/EulerChains.json";
 
 import abiEulerRouter from "../abi/EulerRouter";
 import abiEVault from "../abi/EVault";
@@ -29,16 +30,6 @@ import type {
   VaultGovernorAddresses,
 } from "./types";
 
-import coreAddresses_1 from "../../euler-interfaces/addresses/1/CoreAddresses.json";
-import peripheryAddresses_1 from "../../euler-interfaces/addresses/1/PeripheryAddresses.json";
-import vaultGovernorAddresses_1 from "../../euler-interfaces/addresses/1/GovernorAddresses.json";
-import coreAddresses_1923 from "../../euler-interfaces/addresses/1923/CoreAddresses.json";
-import peripheryAddresses_1923 from "../../euler-interfaces/addresses/1923/PeripheryAddresses.json";
-import vaultGovernorAddresses_1923 from "../../euler-interfaces/addresses/1923/GovernorAddresses.json";
-import coreAddresses_8453 from "../../euler-interfaces/addresses/8453/CoreAddresses.json";
-import peripheryAddresses_8453 from "../../euler-interfaces/addresses/8453/PeripheryAddresses.json";
-import vaultGovernorAddresses_8453 from "../../euler-interfaces/addresses/8453/GovernorAddresses.json";
-
 export const abi = [
   ...abiEvc,
   ...abiEVault,
@@ -53,29 +44,20 @@ export const abi = [
   ...abiSnapshotRegistry,
 ];
 
-const globalAddresses: {
-  [chainId: number]: {
-    core: CoreAddresses;
-    periphery: PeripheryAddresses;
-    vaultGovernor?: VaultGovernorAddresses;
-  };
-} = {
-  1: {
-    core: coreAddresses_1 as CoreAddresses,
-    periphery: peripheryAddresses_1 as PeripheryAddresses,
-    vaultGovernor: vaultGovernorAddresses_1 as VaultGovernorAddresses,
-  },
-  1923: {
-    core: coreAddresses_1923 as CoreAddresses,
-    periphery: peripheryAddresses_1923 as PeripheryAddresses,
-    vaultGovernor: vaultGovernorAddresses_1923 as VaultGovernorAddresses,
-  },
-  8453: {
-    core: coreAddresses_8453 as CoreAddresses,
-    periphery: peripheryAddresses_8453 as PeripheryAddresses,
-    vaultGovernor: vaultGovernorAddresses_8453 as VaultGovernorAddresses,
-  },
-};
+
+
+
+let globalAddresses = {};
+
+for (let chain of eulerChains) {
+    globalAddresses[chain.chainId] = {
+        core: chain.addresses.coreAddrs,
+        periphery: chain.addresses.peripheryAddrs,
+        vaultGovernor: chain.addresses.governorAddrs,
+    };
+}
+
+
 
 function extractFunctionNames(a: Abi): string[] {
   return a.flatMap((abiItem) => {
@@ -89,60 +71,27 @@ export const eVaultFunctionNames = extractFunctionNames(abiEVault);
 export const eulerRouterFunctionNames = extractFunctionNames(abiEulerRouter);
 
 
-const swellnetwork = defineChain({
-  id: 1923,
-  name: 'Swell',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://swell-mainnet.alt.technology'],
-      webSocket: ['wss://swell-mainnet.alt.technology'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Explorer', url: 'https://explorer.swellnetwork.io' },
-  },
-  contracts: {
-    multicall3: {
-      address: '0xcA11bde05977b3631167028862bE2a173976CA11',
-      blockCreated: 1,
-    },
-  },
-});
+export let supportedChains = {};
+export let supportedChainList = [];
 
+for (let config of eulerChains) {
+    let chain = viemChains[config.viemName || config.name];
+    if (!chain) throw Error(`no viem entry found for chain ${config.name}`);
 
-export const supportedChains: {
-  [chainId: number]: ChainConfig;
-} = {
-  [mainnet.id]: {
-    id: mainnet.id,
-    explorerUrl: "https://etherscan.io",
-    client: createPublicClient({
-      chain: mainnet,
-      transport: http("https://rpc.ankr.com/eth"),
-    }),
-  },
-  [swellnetwork.id]: {
-    id: swellnetwork.id,
-    explorerUrl: "https://explorer.swellnetwork.io",
-    client: createPublicClient({
-      chain: swellnetwork,
-      transport: http("https://swell-mainnet.alt.technology"),
-    }) as PublicClient,
-  },
-  [base.id]: {
-    id: base.id,
-    explorerUrl: "https://basescan.org",
-    client: createPublicClient({
-      chain: base,
-      transport: http("https://rpc.ankr.com/base"),
-    }) as PublicClient,
-  },
-};
+    let client = createPublicClient({
+        chain,
+        transport: http(chain.rpcUrls.default.http[0]),
+    });
+
+    supportedChains[config.chainId] = {
+        id: config.chainId,
+        explorerUrl: chain.blockExplorers.default.url,
+        client,
+    };
+
+    if (config.status !== 'testing') supportedChainList.push(config);
+}
+
 
 function loadDeploymentAddresses(
   chainId: number
