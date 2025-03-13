@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import { DecodedItem } from "../lib/types";
 import AddressValue from "./values/AddressValue";
 import { abi } from "../lib/constants";
@@ -45,7 +45,7 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
       borderRadius="md"
       px={1}
     >
-      <Text
+      <Box
         wordBreak="break-all"
         fontFamily="monospace"
         fontSize="md"
@@ -71,9 +71,9 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
             {args.map((arg, i) => {
               const param = inputParams[i];
               return (
-                <Text key={i}>
+                <div key={i}>
                   <CallParamValue param={param} arg={arg} />
-                </Text>
+                </div>
               );
             })}
           </Flex>
@@ -88,7 +88,7 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
             <AddressValue a={targetContract} />
           </>
         )}
-      </Text>
+      </Box>
     </Flex>
   );
 }
