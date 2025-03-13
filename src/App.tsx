@@ -153,7 +153,7 @@ function App() {
     })();
   }, [items]);
 
-  const diffs = items ? getDiffs(items) : undefined;
+  const diffs = getDiffs(items);
 
   return (
     <Box px={6} py={6}>

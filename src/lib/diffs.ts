@@ -15,6 +15,8 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
   const vaults: { [address: Address]: VaultDiff } = {};
   const routers: { [address: Address]: RouterDiff } = {};
 
+  if (!calls) return undefined;
+
   calls.forEach((call) => {
     const f = call.decoded?.functionName;
     if (!f) return;
