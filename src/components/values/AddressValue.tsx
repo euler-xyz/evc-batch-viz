@@ -42,7 +42,7 @@ function AddressValue({ a }: Props) {
       isExternal
     >
       <Box as="span" bgColor={color} color="black" px={1} rounded="full">
-        {content}
+        {content} {metadata && metadata.legacy && <b>LEGACY</b>}
       </Box>
     </Link>
   );

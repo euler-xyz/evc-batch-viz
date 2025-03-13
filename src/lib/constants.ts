@@ -115,7 +115,6 @@ function loadDeploymentAddresses(
     }
   }
 
-  console.log(output);
   return output;
 }
 
@@ -161,6 +160,11 @@ export function initAddressMetadataMap(
     "0xae26485ACDDeFd486Fe9ad7C2b34169d360737c7": {
       kind: "global",
       label: "Swap Verifier",
+    },
+    "0x088756eB730A08CbEb98Dfe67Ca74697a8A63153": {
+      kind: "global",
+      label: "governor/accessControlEmergencyGovernor",
+      legacy: true, // old mainnet gov
     },
   };
 }

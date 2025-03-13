@@ -18,7 +18,7 @@ function ItemActionBox({ i, item }: Props) {
   const targetIsGAC =
     targetContract &&
     metadata[targetContract]?.kind === "global" &&
-    metadata[targetContract].label.includes("DAO Governor Access Control");
+    metadata[targetContract].label === 'governor/accessControlEmergencyGovernor';
 
   if (targetIsGAC) {
     targetContract = checksumAddress(`0x${item.data.slice(-40)}`);

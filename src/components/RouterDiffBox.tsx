@@ -89,6 +89,12 @@ function RouterDiffBox({ address, routerDiff }: Props) {
                     )}
                   </Flex>
                 );
+              } else if (key === "governor") {
+                return (
+                  <Text>
+                    {key} &rarr; <AddressValue a={value as Address} />
+                  </Text>
+                );
               }
               return <div>{key} &rarr; unknown</div>;
             })()}

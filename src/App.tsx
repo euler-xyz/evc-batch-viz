@@ -102,7 +102,8 @@ function App() {
       const targetIsGAC =
         targetContract &&
         metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract].label.includes("DAO Governor Access Control");
+        metadata[targetContract].label === 'governor/accessControlEmergencyGovernor'
+        ;
 
       if (targetIsGAC) {
         targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
@@ -116,7 +117,7 @@ function App() {
 
       if (
         metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract]?.label === "Oracle Adapter Registry"
+        metadata[targetContract]?.label === "periphery/oracleAdapterRegistry"
       ) {
         if (f === "add") {
           oracleAddresses.add(call.decoded.args[0]);

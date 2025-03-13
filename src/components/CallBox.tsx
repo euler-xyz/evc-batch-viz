@@ -36,7 +36,7 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
   const targetIsGAC =
     targetContract &&
     metadata[targetContract]?.kind === "global" &&
-    metadata[targetContract].label.includes("DAO Governor Access Control");
+    metadata[targetContract].label === 'governor/accessControlEmergencyGovernor';
   return (
     <Flex
       direction="column"

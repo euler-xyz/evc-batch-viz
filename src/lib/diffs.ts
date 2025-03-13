@@ -26,7 +26,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
     const targetIsGAC =
       targetContract &&
       metadata[targetContract]?.kind === "global" &&
-      metadata[targetContract].label.includes("DAO Governor Access Control");
+      metadata[targetContract].label === 'governor/accessControlEmergencyGovernor';
 
     if (targetIsGAC) {
       targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
@@ -115,6 +115,16 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
         newValues: {
           ...existingRouter?.newValues,
           configs: [...(existingRouter?.newValues?.configs ?? []), configDiff],
+        },
+      };
+    } else if (f === "transferGovernance") {
+      const existingRouter = routers[targetContract];
+
+      routers[targetContract] = {
+        ...existingRouter,
+        newValues: {
+          ...existingRouter?.newValues,
+          governor: call.decoded.args[0],
         },
       };
     } else if (f === "govSetResolvedVault") {
