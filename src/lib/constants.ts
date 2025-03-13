@@ -87,6 +87,7 @@ for (let config of eulerChains) {
         id: config.chainId,
         explorerUrl: chain.blockExplorers.default.url,
         client,
+        config,
     };
 
     if (config.status !== 'testing') supportedChainList.push(config);
@@ -96,109 +97,26 @@ for (let config of eulerChains) {
 function loadDeploymentAddresses(
   chainId: number
 ): AddressMetadataMap<AddressMetadata> {
-  const coreAddresses = globalAddresses[chainId].core;
-  const peripheryAddresses = globalAddresses[chainId].periphery;
-  const vaultGovernorAddresses = globalAddresses[chainId].vaultGovernor;
+  let output = {};
 
-  const a: AddressMetadataMap<AddressMetadata> = {
-    [coreAddresses.balanceTracker]: {
-      kind: "global",
-      label: "Balance Tracker",
-    },
-    [coreAddresses.eVaultFactory]: {
-      kind: "global",
-      label: "EVault Factory",
-    },
-    [coreAddresses.eVaultFactoryGovernor]: {
-      kind: "global",
-      label: "EVault Factory Governor",
-    },
-    [coreAddresses.eVaultImplementation]: {
-      kind: "global",
-      label: "EVault Implementation",
-    },
-    [coreAddresses.evc]: {
-      kind: "global",
-      label: "EVC",
-    },
-    [coreAddresses.permit2]: {
-      kind: "global",
-      label: "Permit2",
-    },
-    [coreAddresses.protocolConfig]: {
-      kind: "global",
-      label: "Protocol Config",
-    },
-    [coreAddresses.sequenceRegistry]: {
-      kind: "global",
-      label: "Sequence Registry",
-    },
-    [peripheryAddresses.escrowedCollateralPerspective]: {
-      kind: "global",
-      label: "Escrowed Collateral Perspective",
-    },
-    [peripheryAddresses.eulerUngoverned0xPerspective]: {
-      kind: "global",
-      label: "Ungoverned 0x Perspective",
-    },
-    [peripheryAddresses.eulerUngovernedNzxPerspective]: {
-      kind: "global",
-      label: "Ungoverned NZX Perspective",
-    },
-    [peripheryAddresses.evkFactoryPerspective]: {
-      kind: "global",
-      label: "EVK Factory Perspective",
-    },
-    [peripheryAddresses.externalVaultRegistry]: {
-      kind: "global",
-      label: "External Vault Registry",
-    },
-    [peripheryAddresses.feeFlowController]: {
-      kind: "global",
-      label: "Fee Flow Controller",
-    },
-    [peripheryAddresses.governedPerspective]: {
-      kind: "global",
-      label: "Governed Perspective",
-    },
-    [peripheryAddresses.irmRegistry]: {
-      kind: "global",
-      label: "IRM Registry",
-    },
-    [peripheryAddresses.kinkIRMFactory]: {
-      kind: "global",
-      label: "Kink IRM Factory",
-    },
-    [peripheryAddresses.oracleAdapterRegistry]: {
-      kind: "global",
-      label: "Oracle Adapter Registry",
-    },
-    [peripheryAddresses.oracleRouterFactory]: {
-      kind: "global",
-      label: "Oracle Router Factory",
-    },
-    [peripheryAddresses.swapVerifier]: {
-      kind: "global",
-      label: "Swap Verifier",
-    },
-    [peripheryAddresses.swapper]: {
-      kind: "global",
-      label: "Swapper",
-    },
-    [peripheryAddresses.termsOfUseSigner]: {
-      kind: "global",
-      label: "Terms of Use Signer",
-    },
-  };
+  let chain = supportedChains[chainId];
+  if (!chain) throw Error(`unable to load deployment addrs for chain ${chainId}`);
 
-  if (vaultGovernorAddresses) {
-    a[getAddress(vaultGovernorAddresses.accessControlEmergencyGovernor)] = {
-      kind: "global",
-      label: "DAO Governor Access Control",
-    };
+  for (let addrTypeKey of Object.keys(chain.config.addresses)) {
+    let addrs = chain.config.addresses[addrTypeKey];
+    let addrCategory = addrTypeKey.replace(/Addrs$/, '');
+
+    for (let addrName of Object.keys(addrs)) {
+      let addr = addrs[addrName];
+      output[addr] = {
+        kind: "global",
+        label: `${addrCategory}/${addrName}`,
+      };
+    }
   }
 
-  return a;
+  console.log(output);
+  return output;
 }
 
 const designatorTokens: AddressMetadataMap<AddressMetadata> = {
@@ -228,58 +146,6 @@ export function initAddressMetadataMap(
   return {
     ...loadDeploymentAddresses(chainId),
     ...designatorTokens,
-    "0xEe009FAF00CF54C1B4387829aF7A8Dc5f0c8C8C5": {
-      kind: "global",
-      label: "Euler Deployer (Ethereum)",
-    },
-    "0xcAD001c30E96765aC90307669d578219D4fb1DCe": {
-      kind: "global",
-      label: "Euler DAO Treasury Multisig (Ethereum)",
-    },
-    "0xB1345E7A4D35FB3E6bF22A32B3741Ae74E5Fba27": {
-      kind: "global",
-      label: "Euler Labs Ops Multisig (Ethereum)",
-    },
-    "0xb3b84e8320250Afe7a5fb313Ee32B52982b73c53": {
-      kind: "global",
-      label: "Euler Security Council Multisig (Ethereum)",
-    },
-    "0x8731765b635D5Dc45159f0A2C7D748C3927d68a6": {
-      kind: "global",
-      label: "Euler Deployer (Base)",
-    },
-    "0x1e13B0847808045854Ddd908F2d770Dc902Dcfb8": {
-      kind: "global",
-      label: "Euler DAO Treasury Multisig (Base)",
-    },
-    "0x33C71422B3E20ef2472Bc9aa9252220CAeAF207e": {
-      kind: "global",
-      label: "Euler Labs Ops Multisig (Base)",
-    },
-    "0x5a3f0c8BC2ab1d35c5E7e9e98757CF2Ed762BC73": {
-      kind: "global",
-      label: "Euler Security Council Multisig (Base)",
-    },
-    "0x223c87de4e41448adfDe6F4F93D9bD4DEA9d88d1": {
-      kind: "global",
-      label: "DAO Governor Access Control (Base)",
-    },
-    "0x5B13E9c627d4114E9bCd6755fF174A6a5017D364": {
-      kind: "global",
-      label: "Euler Deployer (Polygon)",
-    },
-    "0x6849230767A5C61C6b9eEfb0405f0FB707eF14E6": {
-      kind: "global",
-      label: "Euler DAO Treasury Multisig (Polygon)",
-    },
-    "0x12dFb66acf7c67E4ED0678a479B65eE31bd8f3d2": {
-      kind: "global",
-      label: "Euler Labs Ops Multisig (Polygon)",
-    },
-    "0x2D27adb58A2DF0c3cC838C3071623E905f7400fd": {
-      kind: "global",
-      label: "Euler Security Council Multisig (Polygon)",
-    },
     "0x4305FB66699C3B2702D4d05CF36551390A4c69C6": {
       kind: "global",
       label: "Pyth Proxy",
