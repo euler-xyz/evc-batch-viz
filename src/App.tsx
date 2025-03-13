@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { decodeEVCBatch } from "./lib/decode";
-import safeTx1 from "./assets/safe_tx1.json";
-import safeTxGov from "./assets/safe_tx_gov.json";
 import { type DecodedEVCCall } from "./lib/types";
 import { Address, checksumAddress, Hash } from "viem";
 import {
@@ -188,12 +186,6 @@ function App() {
               </Button>
               <Button colorScheme="red" onClick={() => loadPayload({})}>
                 Clear
-              </Button>
-              <Button colorScheme="blue" onClick={() => loadPayload(safeTx1)}>
-                Load Example
-              </Button>
-              <Button colorScheme="blue" onClick={() => loadPayload(safeTxGov)}>
-                Load Gov Example
               </Button>
             </ButtonGroup>
           </Flex>
