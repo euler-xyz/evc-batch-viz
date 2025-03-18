@@ -59,7 +59,7 @@ function App() {
       if (parsed.match(/^[\[\{"]/)) {
         parsed = JSON.parse(parsed);
       } else {
-        if (!parsed.startsWith("0x")) parsed = `0x${cleanedText}`;
+        if (!parsed.startsWith("0x")) parsed = `0x${parsed}`;
         parsed = parsed.toLowerCase();
         parsed = { data: parsed, };
       }
