@@ -54,10 +54,15 @@ function App() {
     setItems(undefined);
 
     try {
-      let cleanedText = text.trim();
-      const parsed = cleanedText.startsWith("0x")
-        ? { data: cleanedText }
-        : JSON.parse(cleanedText);
+      let parsed = text.trim();
+
+      if (parsed.match(/^[\[\{"]/)) {
+        parsed = JSON.parse(parsed);
+      } else {
+        if (!parsed.startsWith("0x")) parsed = `0x${cleanedText}`;
+        parsed = parsed.toLowerCase();
+        parsed = { data: parsed, };
+      }
 
       setItems(decodeEVCBatch(parsed));
     } catch (e: any) {
