@@ -14,6 +14,7 @@ import abiEulerRouter from "../abi/EulerRouter";
 import abiEVault from "../abi/EVault";
 import abiEvc from "../abi/EthereumVaultConnector";
 import abiPerspective from "../abi/BasePerspective";
+import abiGovernedPerspective from "../abi/GovernedPerspective";
 import abiSwapper from "../abi/Swapper";
 import abiSwapVerifier from "../abi/SwapVerifier";
 import abiPermit2 from "../abi/Permit2";
@@ -35,6 +36,7 @@ export const abi = [
   ...abiEVault,
   ...abiEulerRouter,
   ...abiPerspective,
+  ...abiGovernedPerspective,
   ...abiSwapper,
   ...abiSwapVerifier,
   ...abiPermit2,
