@@ -78,6 +78,7 @@ export let supportedChainList = [];
 
 for (let config of eulerChains) {
     let chain = viemChains[config.viemName || config.name];
+    if (config.status === 'testing') continue;
     if (!chain) throw Error(`no viem entry found for chain ${config.name}`);
 
     let client = createPublicClient({
@@ -92,7 +93,7 @@ for (let config of eulerChains) {
         config,
     };
 
-    if (config.status !== 'testing') supportedChainList.push(config);
+    supportedChainList.push(config);
 }
 
 
