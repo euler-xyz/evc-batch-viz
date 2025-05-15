@@ -1,5 +1,5 @@
 import { Box, Link } from "@chakra-ui/react";
-import { Address, keccak256 } from "viem";
+import { Address, keccak256, zeroAddress } from "viem";
 import { useAddressMetadata } from "../../context/AddressContext";
 import { useChainConfig } from "../../context/ChainContext";
 
@@ -8,6 +8,9 @@ type Props = {
 };
 
 function AddressValue({ a }: Props) {
+  if (a === zeroAddress) return <span style={{ color: 'red', }}>UNKNOWN address(0)</span>;
+  if (a === undefined) return <span style={{ color: 'red', }}>UNKNOWN undefined</span>;
+
   const { metadata: allMetadata } = useAddressMetadata();
   const { chain } = useChainConfig();
   const metadata = allMetadata[a];

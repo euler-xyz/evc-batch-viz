@@ -42,6 +42,7 @@ function App() {
   const [txHash, setTxHash] = useState<string>("");
   const [error, setError] = useState<string>();
   const [items, setItems] = useState<DecodedEVCCall[]>();
+  const [timelockInfo, setTimelockInfo] = useState();
   const { metadata, setMetadata } = useAddressMetadata();
   const { chain, setChain } = useChainConfig();
 
@@ -52,6 +53,7 @@ function App() {
   const doDecode = () => {
     setError(undefined);
     setItems(undefined);
+    setTimelockInfo(undefined);
 
     try {
       let parsed = text.trim();
@@ -64,7 +66,9 @@ function App() {
         parsed = { data: parsed, };
       }
 
-      setItems(decodeEVCBatch(parsed));
+      let decoded = decodeEVCBatch(parsed);
+      setItems(decoded.items);
+      setTimelockInfo(decoded.timelockInfo);
     } catch (e: any) {
       console.error(e);
       setError(e.toString());
@@ -75,6 +79,7 @@ function App() {
   const loadTx = async () => {
     setError(undefined);
     setItems(undefined);
+    setTimelockInfo(undefined);
 
     try {
       const txCalldata = await getTxCalldata(txHash as Hash, chain.client);
@@ -89,7 +94,8 @@ function App() {
   const loadPayload = (payload: any) => {
     setError(undefined);
     setItems(undefined);
-    setText(JSON.stringify(payload));
+    setTimelockInfo(undefined);
+    setText(payload ? JSON.stringify(payload) : '');
   };
 
   useEffect(() => {
@@ -190,7 +196,7 @@ function App() {
               <Button colorScheme="green" onClick={() => doDecode()}>
                 Decode
               </Button>
-              <Button colorScheme="red" onClick={() => loadPayload({})}>
+              <Button colorScheme="red" onClick={() => loadPayload('')}>
                 Clear
               </Button>
             </ButtonGroup>
@@ -211,6 +217,10 @@ function App() {
         {error && <ErrorBox msg={error} />}
 
         {diffs && <DiffsBox diffs={diffs} />}
+
+        {timelockInfo && <div style={{ fontSize: '200%', fontWeight: 'bold', color: 'green', }}>
+            TIMELOCK DELAY = {timelockInfo.delay.toString()}s
+        </div>}
 
         {items && <BatchBox items={items} />}
       </Flex>

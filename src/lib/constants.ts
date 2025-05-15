@@ -6,6 +6,7 @@ import {
   http,
   PublicClient,
   defineChain,
+  parseAbi,
 } from "viem";
 import * as viemChains from "viem/chains";
 import eulerChains from "../../euler-interfaces/EulerChains.json";
@@ -44,6 +45,11 @@ export const abi = [
   ...abiTrackingRewardStreams,
   ...abiFeeFlowController,
   ...abiSnapshotRegistry,
+  ...parseAbi([
+    'function scheduleBatch(address[] calldata targets, uint256[] calldata values, bytes[] calldata payloads, bytes32 predecessor, bytes32 salt, uint256 delay)',
+    'function grantRole(bytes32 role, address account)',
+    'function revokeRole(bytes32 role, address account)',
+  ]),
 ];
 
 
