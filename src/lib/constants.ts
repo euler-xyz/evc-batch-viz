@@ -23,6 +23,7 @@ import abiPythProxy from "../abi/PythProxy";
 import abiTrackingRewardStreams from "../abi/TrackingRewardSteams";
 import abiFeeFlowController from "../abi/FeeFlowController";
 import abiSnapshotRegistry from "../abi/SnapshotRegistry";
+import abiProtocolConfig from "../abi/ProtocolConfig";
 import type {
   AddressMetadata,
   AddressMetadataMap,
@@ -45,6 +46,7 @@ export const abi = [
   ...abiTrackingRewardStreams,
   ...abiFeeFlowController,
   ...abiSnapshotRegistry,
+  ...abiProtocolConfig,
   ...parseAbi([
     'function scheduleBatch(address[] calldata targets, uint256[] calldata values, bytes[] calldata payloads, bytes32 predecessor, bytes32 salt, uint256 delay)',
     'function grantRole(bytes32 role, address account)',
