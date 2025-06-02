@@ -22,7 +22,7 @@ type Props = {
   children?: ReactNode;
 };
 
-function CallBox({ decoded, i, targetContract, data, children }: Props) {
+function CallBox({ decoded, i, targetContract, data, children, batchType }: Props) {
   const { metadata } = useAddressMetadata();
   const { args } = decoded;
 
@@ -56,7 +56,7 @@ function CallBox({ decoded, i, targetContract, data, children }: Props) {
         </Box>{" "}
         {targetIsGAC ? (
           <>
-            <AddressValue a={checksumAddress(`0x${data.slice(-40)}`)} />.
+            <AddressValue a={batchType === 'scheduleBatch' ? targetContract : checksumAddress(`0x${data.slice(-40)}`)} />.
           </>
         ) : (
           targetContract && (

@@ -19,7 +19,7 @@ export function decodeEVCBatch(contents: { data: any }) {
             data: item.data,
           });
 
-          items.push({ ...item, decoded: decodedItem });
+          items.push({ ...item, decoded: decodedItem, batchType: 'batch', });
         } catch (e) {
           console.warn(e);
 
@@ -35,7 +35,7 @@ export function decodeEVCBatch(contents: { data: any }) {
             data: args[2][i],
         });
 
-        items.push({ data: args[2][i], targetContract: args[0][i], value: args[1][i], decoded: decodedItem, });
+        items.push({ data: args[2][i], targetContract: args[0][i], value: args[1][i], decoded: decodedItem, batchType: 'scheduleBatch', });
     }
 
     timelockInfo = { delay: args[5], };

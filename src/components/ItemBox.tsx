@@ -45,6 +45,7 @@ function ItemBox({ item, i, isAdvancedMode }: Props) {
     <CallBox
       data={item.data}
       decoded={item.decoded}
+      batchType={item.batchType}
       i={i}
       targetContract={item.targetContract}
     >
