@@ -129,6 +129,13 @@ export type UnknownCall = {
 
 export type DecodedEVCCall = EVCBatchArgs & {
   decoded?: DecodedItem;
+  batchType?: 'batch' | 'scheduleBatch' | 'schedule';
+  predecessor?: string;
+  salt?: string;
+  nestedBatch?: {
+    items: DecodedEVCCall[];
+    timelockInfo?: any;
+  };
 };
 
 export type AddressKind = "vault" | "oracle" | "token" | "global";

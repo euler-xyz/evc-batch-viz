@@ -2,9 +2,8 @@ import { Box, Flex } from "@chakra-ui/react";
 import { type AbiParameter, type Address, decodeFunctionData } from "viem";
 import AddressValue from "./AddressValue";
 import type { DecodedItem } from "../../lib/types";
-import Swapper from "../../abi/Swapper";
+import { abi } from "../../lib/constants";
 import CallBox from "../CallBox";
-import FeeFlowController from "../../abi/FeeFlowController";
 import { Key } from "react";
 import { useAddressMetadata } from "../../context/AddressContext";
 
@@ -30,13 +29,16 @@ function CallParamValue({ param, arg }: Props) {
               <Flex direction="column" ml={2}>
                 {arg.map((el, i) => {
                   try {
+                    // Check if the element is an object with a data property (like in schedule function)
+                    const callData = typeof el === 'object' && el !== null && 'data' in el ? el.data : el;
+                    
                     const decodedItem: DecodedItem = decodeFunctionData({
-                      abi: [...Swapper, ...FeeFlowController],
-                      data: el,
+                      abi: [...abi],
+                      data: callData,
                     });
 
                     return (
-                      <CallBox key={i} i={i} decoded={decodedItem} data={el} />
+                      <CallBox key={i} i={i} decoded={decodedItem} data={callData} />
                     );
                   } catch (e) {
                     console.error(e);
@@ -75,6 +77,11 @@ function CallParamValue({ param, arg }: Props) {
 
         if (param.type === "array") {
           return <Box as="span">ARRAY{arg.toString()}</Box>;
+        }
+
+        // Safety check to prevent rendering objects directly
+        if (typeof arg === 'object' && arg !== null) {
+          return <Box as="span">{JSON.stringify(arg)}</Box>;
         }
 
         return <Box as="span">{arg.toString()}</Box>;

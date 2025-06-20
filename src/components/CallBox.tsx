@@ -20,6 +20,7 @@ type Props = {
   decoded: DecodedItem;
   i: number;
   children?: ReactNode;
+  batchType?: 'batch' | 'scheduleBatch' | 'schedule';
 };
 
 function CallBox({ decoded, i, targetContract, data, children, batchType }: Props) {
@@ -32,11 +33,24 @@ function CallBox({ decoded, i, targetContract, data, children, batchType }: Prop
   );
 
   const inputParams = abiFunction?.inputs! as AbiParameter[];
+  const originalProxy = targetContract;
 
   const targetIsGAC =
     targetContract &&
     metadata[targetContract]?.kind === "global" &&
     metadata[targetContract].label === 'governor/accessControlEmergencyGovernor';
+
+  const targetIsCapRiskSteward =
+    targetContract &&
+    metadata[targetContract]?.kind === "global" &&
+    metadata[targetContract].label === 'governor/capRiskSteward';
+
+  const isProxyCall = targetIsGAC || targetIsCapRiskSteward;
+
+  if (isProxyCall) {
+    targetContract = checksumAddress(`0x${data.slice(-40)}`);
+  }
+
   return (
     <Flex
       direction="column"
@@ -54,16 +68,8 @@ function CallBox({ decoded, i, targetContract, data, children, batchType }: Prop
         <Box as="span" color="gray.500">
           #{i}
         </Box>{" "}
-        {targetIsGAC ? (
-          <>
-            <AddressValue a={batchType === 'scheduleBatch' ? targetContract : checksumAddress(`0x${data.slice(-40)}`)} />.
-          </>
-        ) : (
-          targetContract && (
-            <>
-              <AddressValue a={targetContract} />.
-            </>
-          )
+        {targetContract && (
+            <><AddressValue a={targetContract} />.</>
         )}
         {decoded.functionName}(
         {args && (
@@ -79,13 +85,13 @@ function CallBox({ decoded, i, targetContract, data, children, batchType }: Prop
           </Flex>
         )}
         ){children}
-        {targetIsGAC && (
+        {isProxyCall && (
           <>
             ,{" "}
             <Box as="span" color="gray.500" fontStyle="italic">
               proxy=
             </Box>
-            <AddressValue a={targetContract} />
+            <AddressValue a={originalProxy} />
           </>
         )}
       </Box>

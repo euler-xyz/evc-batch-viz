@@ -20,7 +20,15 @@ function ItemActionBox({ i, item }: Props) {
     metadata[targetContract]?.kind === "global" &&
     metadata[targetContract].label === 'governor/accessControlEmergencyGovernor';
 
-  if (targetIsGAC) {
+  const targetIsCapRiskSteward =
+    targetContract &&
+    metadata[targetContract]?.kind === "global" &&
+    metadata[targetContract].label === 'governor/capRiskSteward';
+
+  const isProxyCall = targetIsGAC || targetIsCapRiskSteward;
+  const originalProxy = targetContract;
+
+  if (isProxyCall) {
     targetContract = checksumAddress(`0x${item.data.slice(-40)}`);
   }
 
@@ -240,18 +248,37 @@ function ItemActionBox({ i, item }: Props) {
 
   return (
     <Flex
-      direction="row"
-      align="center"
-      gap={2}
+      direction="column"
       borderWidth="1px"
       borderColor="gray.200"
       borderRadius="md"
       px={1}
     >
-      <Box as="span" color="gray.500">
-        #{i}
-      </Box>{" "}
-      {content ?? "Unknown action"}
+      <Flex
+        direction="row"
+        align="center"
+        gap={2}
+      >
+        <Box as="span" color="gray.500">
+          #{i}
+        </Box>{" "}
+        {content ?? "Unknown action"}
+      </Flex>
+      {isProxyCall && (
+        <Flex
+          direction="row"
+          align="center"
+          gap={1}
+          ml={4}
+          fontSize="sm"
+          color="gray.500"
+        >
+          <Box as="span" fontStyle="italic">
+            proxy:
+          </Box>
+          <AddressValue a={originalProxy} />
+        </Flex>
+      )}
     </Flex>
   );
 }

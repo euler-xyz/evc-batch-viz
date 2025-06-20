@@ -104,51 +104,67 @@ function App() {
     const vaultAddresses: Set<Address> = new Set();
     const tokenAddresses: Set<Address> = new Set();
 
-    items.forEach((call) => {
-      const f = call.decoded?.functionName;
-      if (!f) return;
+    // Helper function to process calls recursively
+    function processCalls(callList: DecodedEVCCall[]) {
+      callList.forEach((call) => {
+        const f = call.decoded?.functionName;
+        if (!f) return;
 
-      let targetContract = call.targetContract;
+        let targetContract = call.targetContract;
 
-      const targetIsGAC =
-        targetContract &&
-        metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract].label === 'governor/accessControlEmergencyGovernor'
-        ;
+        const targetIsGAC =
+          targetContract &&
+          metadata[targetContract]?.kind === "global" &&
+          metadata[targetContract].label === 'governor/accessControlEmergencyGovernor'
+          ;
 
-      if (targetIsGAC) {
-        targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
-      }
+        const targetIsCapRiskSteward =
+          targetContract &&
+          metadata[targetContract]?.kind === "global" &&
+          metadata[targetContract].label === 'governor/capRiskSteward'
+          ;
 
-      if (eVaultFunctionNames.includes(f)) {
-        vaultAddresses.add(targetContract);
-      } else if (eulerRouterFunctionNames.includes(f)) {
-        oracleAddresses.add(targetContract);
-      }
-
-      if (
-        metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract]?.label === "periphery/oracleAdapterRegistry"
-      ) {
-        if (f === "add") {
-          oracleAddresses.add(call.decoded.args[0]);
-          tokenAddresses.add(call.decoded.args[1]);
-          tokenAddresses.add(call.decoded.args[2]);
-        } else if (f === "revoke") {
-          oracleAddresses.add(call.decoded.args[0]);
+        if (targetIsGAC || targetIsCapRiskSteward) {
+          targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
         }
-      }
 
-      if (f === "govSetConfig") {
-        tokenAddresses.add(call.decoded.args[0]);
-        tokenAddresses.add(call.decoded.args[1]);
-        oracleAddresses.add(call.decoded.args[2]);
-      } else if (f === "govSetResolvedVault") {
-        vaultAddresses.add(call.decoded.args[0]);
-      } else if (f === "setLTV") {
-        vaultAddresses.add(call.decoded.args[0]);
-      }
-    });
+        if (eVaultFunctionNames.includes(f)) {
+          vaultAddresses.add(targetContract);
+        } else if (eulerRouterFunctionNames.includes(f)) {
+          oracleAddresses.add(targetContract);
+        }
+
+        if (
+          metadata[targetContract]?.kind === "global" &&
+          metadata[targetContract]?.label === "periphery/oracleAdapterRegistry"
+        ) {
+          if (f === "add") {
+            oracleAddresses.add(call.decoded.args[0]);
+            tokenAddresses.add(call.decoded.args[1]);
+            tokenAddresses.add(call.decoded.args[2]);
+          } else if (f === "revoke") {
+            oracleAddresses.add(call.decoded.args[0]);
+          }
+        }
+
+        if (f === "govSetConfig") {
+          tokenAddresses.add(call.decoded.args[0]);
+          tokenAddresses.add(call.decoded.args[1]);
+          oracleAddresses.add(call.decoded.args[2]);
+        } else if (f === "govSetResolvedVault") {
+          vaultAddresses.add(call.decoded.args[0]);
+        } else if (f === "setLTV") {
+          vaultAddresses.add(call.decoded.args[0]);
+        }
+
+        // Process nested batch if it exists
+        if (call.nestedBatch?.items) {
+          processCalls(call.nestedBatch.items);
+        }
+      });
+    }
+
+    processCalls(items);
 
     (async () => {
       const [oracleMap, vaultMap, tokenMap] = await Promise.all([

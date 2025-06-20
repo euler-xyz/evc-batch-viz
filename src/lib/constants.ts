@@ -49,6 +49,7 @@ export const abi = [
   ...abiProtocolConfig,
   ...parseAbi([
     'function scheduleBatch(address[] calldata targets, uint256[] calldata values, bytes[] calldata payloads, bytes32 predecessor, bytes32 salt, uint256 delay)',
+    'function schedule(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt, uint256 delay)',
     'function grantRole(bytes32 role, address account)',
     'function revokeRole(bytes32 role, address account)',
   ]),
