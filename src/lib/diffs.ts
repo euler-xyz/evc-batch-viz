@@ -85,6 +85,16 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
             maxLiquidationDiscount: call.decoded.args[0],
           },
         };
+      } else if (f === "setHookConfig") {
+        const existingVault = vaults[targetContract];
+        vaults[targetContract] = {
+          ...existingVault,
+          newValues: {
+            ...existingVault?.newValues,
+            hookTarget: call.decoded.args[0],
+            hookedOps: call.decoded.args[1],
+          },
+        };
       } else if (f === "setInterestFee") {
         const existingVault = vaults[targetContract];
         vaults[targetContract] = {
