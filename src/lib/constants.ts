@@ -24,6 +24,7 @@ import abiTrackingRewardStreams from "../abi/TrackingRewardSteams";
 import abiFeeFlowController from "../abi/FeeFlowController";
 import abiSnapshotRegistry from "../abi/SnapshotRegistry";
 import abiProtocolConfig from "../abi/ProtocolConfig";
+import abiEulerEarn from "../abi/EulerEarn";
 import type {
   AddressMetadata,
   AddressMetadataMap,
@@ -47,6 +48,7 @@ export const abi = [
   ...abiFeeFlowController,
   ...abiSnapshotRegistry,
   ...abiProtocolConfig,
+  ...abiEulerEarn,
   ...parseAbi([
     'function scheduleBatch(address[] calldata targets, uint256[] calldata values, bytes[] calldata payloads, bytes32 predecessor, bytes32 salt, uint256 delay)',
     'function schedule(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt, uint256 delay)',
