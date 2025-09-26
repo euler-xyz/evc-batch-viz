@@ -60,7 +60,7 @@ export const abi = [
 
 
 
-let globalAddresses = {};
+let globalAddresses: Record<number, any> = {};
 
 for (let chain of eulerChains) {
     globalAddresses[chain.chainId] = {
@@ -84,13 +84,14 @@ export const eVaultFunctionNames = extractFunctionNames(abiEVault);
 export const eulerRouterFunctionNames = extractFunctionNames(abiEulerRouter);
 
 
-export let supportedChains = {};
-export let supportedChainList = [];
+export let supportedChains: Record<number, any> = {};
+export let supportedChainList: any[] = [];
 
 for (let config of eulerChains) {
-    let chain = viemChains[config.viemName || config.name];
+    let chain = Object.values(viemChains).find(chain => chain.id === config.chainId);
+    
     if (config.status === 'testing') continue;
-    if (!chain) throw Error(`no viem entry found for chain ${config.name}`);
+    if (!chain) throw Error(`no viem entry found for chain ${config.name} (chainId: ${config.chainId})`);
 
     let client = createPublicClient({
         chain,
@@ -99,7 +100,7 @@ for (let config of eulerChains) {
 
     supportedChains[config.chainId] = {
         id: config.chainId,
-        explorerUrl: chain.blockExplorers.default.url,
+        explorerUrl: chain.blockExplorers?.default?.url || '',
         client,
         config,
     };
@@ -111,7 +112,7 @@ for (let config of eulerChains) {
 function loadDeploymentAddresses(
   chainId: number
 ): AddressMetadataMap<AddressMetadata> {
-  let output = {};
+  let output: Record<string, AddressMetadata> = {};
 
   let chain = supportedChains[chainId];
   if (!chain) throw Error(`unable to load deployment addrs for chain ${chainId}`);
