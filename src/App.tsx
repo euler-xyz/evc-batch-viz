@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 
 import { decodeEVCBatch } from "./lib/decode";
 import { type DecodedEVCCall } from "./lib/types";
-import { Address, checksumAddress, Hash } from "viem";
+import { abi } from "./lib/constants";
+import { Address, checksumAddress, Hash, decodeFunctionData } from "viem";
 import {
   getTxCalldata,
   indexTokens,
@@ -67,6 +68,24 @@ function App() {
         if (!parsed.startsWith("0x")) parsed = `0x${parsed}`;
         parsed = parsed.toLowerCase();
         parsed = { data: parsed, };
+      }
+
+      // Check if this is an execTransaction call
+      if (parsed.data && parsed.data.startsWith('0x')) {
+        try {
+          const decoded = decodeFunctionData({
+            abi: abi,
+            data: parsed.data as Hex,
+          });
+          
+          if (decoded.functionName === 'execTransaction') {
+            // Extract the data parameter and decode it as EVC batch
+            const execData = decoded.args[2] as Hex;
+            parsed = { data: execData };
+          }
+        } catch (e) {
+          // Not an execTransaction call, continue with normal decoding
+        }
       }
 
       let decoded = decodeEVCBatch(parsed);

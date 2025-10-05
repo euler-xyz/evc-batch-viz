@@ -56,6 +56,7 @@ export const abi = [
     'function revokeRole(bytes32 role, address account)',
     'function isGovernorAccessControl() external pure returns (bytes4)',
     'function getQuote(uint256 amount, address base, address quote) external view returns (uint256)',
+    'function execTransaction(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 baseGas,uint256 gasPrice,address gasToken,address refundReceiver,bytes signatures)',
   ]),
 ];
 

@@ -1,4 +1,5 @@
 import { Address, Hash, Hex, parseAbi, PublicClient } from "viem";
+import { abi } from "./constants";
 import {
   AddressMetadataMap,
   GovernorMetadata,
@@ -16,7 +17,7 @@ export async function indexGovernors(
     contracts: addresses.flatMap((address) => [
       {
         address,
-        abi: parseAbi(["function isGovernorAccessControl() external pure returns (bytes4)"]),
+        abi: abi,
         functionName: "isGovernorAccessControl",
       },
     ]),
@@ -183,7 +184,7 @@ export async function getOracleQuote(
   try {
     const quote = await client.readContract({
       address: oracle,
-      abi: parseAbi(["function getQuote(uint256 amount, address base, address quote) external view returns (uint256)"]),
+      abi: abi,
       functionName: "getQuote",
       args: [amount, baseToken, quoteToken],
     });
