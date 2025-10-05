@@ -54,6 +54,8 @@ export const abi = [
     'function schedule(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt, uint256 delay)',
     'function grantRole(bytes32 role, address account)',
     'function revokeRole(bytes32 role, address account)',
+    'function isGovernorAccessControl() external pure returns (bytes4)',
+    'function getQuote(uint256 amount, address base, address quote) external view returns (uint256)',
   ]),
 ];
 

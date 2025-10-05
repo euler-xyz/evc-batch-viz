@@ -10,7 +10,7 @@ import {
 } from "./types";
 import { useAddressMetadata } from "../context/AddressContext";
 
-export function getDiffs(calls: DecodedEVCCall[]): Diffs {
+export function getDiffs(calls: DecodedEVCCall[]): Diffs | undefined {
   const { metadata } = useAddressMetadata();
   const vaults: { [address: Address]: VaultDiff } = {};
   const routers: { [address: Address]: RouterDiff } = {};
@@ -28,14 +28,21 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
       const targetIsGAC =
         targetContract &&
         metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract].label === 'governor/accessControlEmergencyGovernor';
+        (metadata[targetContract] as any).label === 'governor/accessControlEmergencyGovernor';
 
       const targetIsCapRiskSteward =
         targetContract &&
         metadata[targetContract]?.kind === "global" &&
-        metadata[targetContract].label === 'governor/capRiskSteward';
+        (metadata[targetContract] as any).label === 'governor/capRiskSteward';
 
-      if (targetIsGAC || targetIsCapRiskSteward) {
+      const targetIsGovernor =
+        targetContract &&
+        metadata[targetContract]?.kind === "governor";
+
+      // Handle governor proxy calls
+      if (call.isGovernorProxy && call.proxiedAddress) {
+        targetContract = call.proxiedAddress;
+      } else if (targetIsGAC || targetIsCapRiskSteward) {
         targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
       }
 
@@ -45,8 +52,8 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            supplyCap: call.decoded.args[0],
-            borrowCap: call.decoded.args[1],
+            supplyCap: call.decoded.args[0] as number,
+            borrowCap: call.decoded.args[1] as number,
           },
         };
       } else if (f === "setGovernorAdmin") {
@@ -55,7 +62,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            governorAdmin: call.decoded.args[0],
+            governorAdmin: call.decoded.args[0] as Address,
           },
         };
       } else if (f === "setFeeReceiver") {
@@ -64,7 +71,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            feeReceiver: call.decoded.args[0],
+            feeReceiver: call.decoded.args[0] as Address,
           },
         };
       } else if (f === "setInterestRateModel") {
@@ -73,7 +80,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            interestRateModel: call.decoded.args[0],
+            interestRateModel: call.decoded.args[0] as Address,
           },
         };
       } else if (f === "setMaxLiquidationDiscount") {
@@ -82,7 +89,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            maxLiquidationDiscount: call.decoded.args[0],
+            maxLiquidationDiscount: call.decoded.args[0] as number,
           },
         };
       } else if (f === "setHookConfig") {
@@ -91,8 +98,8 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            hookTarget: call.decoded.args[0],
-            hookedOps: call.decoded.args[1],
+            // hookTarget: call.decoded.args[0] as Address,
+            // hookedOps: call.decoded.args[1] as bigint,
           },
         };
       } else if (f === "setInterestFee") {
@@ -101,7 +108,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            interestFee: call.decoded.args[0],
+            // interestFee: call.decoded.args[0] as number,
           },
         };
       } else if (f === "setLiquidationCoolOffTime") {
@@ -110,16 +117,16 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            liquidationCoolOffTime: call.decoded.args[0],
+            liquidationCoolOffTime: call.decoded.args[0] as number,
           },
         };
       } else if (f === "setLTV") {
         const existingVault = vaults[targetContract];
         const ltvDiff: LTVDiff = {
-          collateral: call.decoded.args[0],
-          borrowLTV: call.decoded.args[1],
-          liquidationLTV: call.decoded.args[2],
-          rampDuration: call.decoded.args[3],
+          collateral: call.decoded.args[0] as Address,
+          borrowLTV: call.decoded.args[1] as number,
+          liquidationLTV: call.decoded.args[2] as number,
+          rampDuration: call.decoded.args[3] as number,
         };
         vaults[targetContract] = {
           ...existingVault,
@@ -132,9 +139,9 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
         const existingRouter = routers[targetContract];
 
         const configDiff: ConfigDiff = {
-          base: call.decoded.args[0],
-          quote: call.decoded.args[1],
-          oracle: call.decoded.args[2],
+          base: call.decoded.args[0] as Address,
+          quote: call.decoded.args[1] as Address,
+          oracle: call.decoded.args[2] as Address,
         };
         routers[targetContract] = {
           ...existingRouter,
@@ -150,15 +157,15 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingRouter,
           newValues: {
             ...existingRouter?.newValues,
-            governor: call.decoded.args[0],
+            // governor: call.decoded.args[0] as Address,
           },
         };
       } else if (f === "govSetResolvedVault") {
         const existingRouter = routers[targetContract];
 
         const resolvedVaultDiff: ResolvedVaultDiff = {
-          vault: call.decoded.args[0],
-          set: call.decoded.args[1],
+          vault: call.decoded.args[0] as Address,
+          set: call.decoded.args[1] as boolean,
         };
         routers[targetContract] = {
           ...existingRouter,
@@ -177,7 +184,7 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs {
           ...existingRouter,
           newValues: {
             ...existingRouter?.newValues,
-            fallbackOracle: call.decoded.args[0],
+            fallbackOracle: call.decoded.args[0] as Address,
           },
         };
       }

@@ -8,6 +8,8 @@ import {
   indexTokens,
   indexOracles,
   indexVaults,
+  indexGovernors,
+  getOracleQuote,
 } from "./lib/indexers";
 import BatchBox from "./components/BatchBox";
 import { getDiffs } from "./lib/diffs";
@@ -43,6 +45,7 @@ function App() {
   const [error, setError] = useState<string>();
   const [items, setItems] = useState<DecodedEVCCall[]>();
   const [timelockInfo, setTimelockInfo] = useState();
+  const [oracleQuotes, setOracleQuotes] = useState<Map<string, bigint>>(new Map());
   const { metadata, setMetadata } = useAddressMetadata();
   const { chain, setChain } = useChainConfig();
 
@@ -103,6 +106,7 @@ function App() {
     const oracleAddresses: Set<Address> = new Set();
     const vaultAddresses: Set<Address> = new Set();
     const tokenAddresses: Set<Address> = new Set();
+    const governorAddresses: Set<Address> = new Set();
 
     // Helper function to process calls recursively
     function processCalls(callList: DecodedEVCCall[]) {
@@ -111,50 +115,81 @@ function App() {
         if (!f) return;
 
         let targetContract = call.targetContract;
+        let proxiedAddress: Address | undefined;
 
         const targetIsGAC =
           targetContract &&
           metadata[targetContract]?.kind === "global" &&
-          metadata[targetContract].label === 'governor/accessControlEmergencyGovernor'
+          (metadata[targetContract] as any).label === 'governor/accessControlEmergencyGovernor'
           ;
 
         const targetIsCapRiskSteward =
           targetContract &&
           metadata[targetContract]?.kind === "global" &&
-          metadata[targetContract].label === 'governor/capRiskSteward'
+          (metadata[targetContract] as any).label === 'governor/capRiskSteward'
           ;
 
+        // Check if this might be a governor contract call with appended address
+        const hasAppendedAddress = call.data.length >= 42 && call.data.slice(-40).match(/^[0-9a-f]{40}$/i);
+        
+        if (hasAppendedAddress) {
+          // Extract the appended address (this might be the proxied address)
+          proxiedAddress = checksumAddress(`0x${call.data.slice(-40)}`);
+          
+          // Only add to governor addresses if it's not a known global address
+          const isKnownGlobal = metadata[targetContract]?.kind === "global";
+          if (!isKnownGlobal) {
+            governorAddresses.add(targetContract);
+            // Optimistically mark as governor proxy call
+            call.isGovernorProxy = true;
+            call.proxiedAddress = proxiedAddress;
+          }
+        }
+
+        // Handle known governor contracts from metadata (if available)
         if (targetIsGAC || targetIsCapRiskSteward) {
-          targetContract = checksumAddress(`0x${call.data.slice(-40)}`);
+          const proxiedAddress = checksumAddress(`0x${call.data.slice(-40)}`);
+          targetContract = proxiedAddress;
+          call.isGovernorProxy = true;
+          call.proxiedAddress = proxiedAddress;
         }
 
         if (eVaultFunctionNames.includes(f)) {
-          vaultAddresses.add(targetContract);
+          // If we have a proxied address, use that instead of the target contract
+          if (call.isGovernorProxy && call.proxiedAddress) {
+            vaultAddresses.add(call.proxiedAddress);
+          } else {
+            vaultAddresses.add(targetContract);
+          }
         } else if (eulerRouterFunctionNames.includes(f)) {
-          oracleAddresses.add(targetContract);
+          if (call.isGovernorProxy && call.proxiedAddress) {
+            oracleAddresses.add(call.proxiedAddress);
+          } else {
+            oracleAddresses.add(targetContract);
+          }
         }
 
         if (
           metadata[targetContract]?.kind === "global" &&
-          metadata[targetContract]?.label === "periphery/oracleAdapterRegistry"
+          (metadata[targetContract] as any).label === "periphery/oracleAdapterRegistry"
         ) {
           if (f === "add") {
-            oracleAddresses.add(call.decoded.args[0]);
-            tokenAddresses.add(call.decoded.args[1]);
-            tokenAddresses.add(call.decoded.args[2]);
+            oracleAddresses.add(call.decoded.args[0] as Address);
+            tokenAddresses.add(call.decoded.args[1] as Address);
+            tokenAddresses.add(call.decoded.args[2] as Address);
           } else if (f === "revoke") {
-            oracleAddresses.add(call.decoded.args[0]);
+            oracleAddresses.add(call.decoded.args[0] as Address);
           }
         }
 
         if (f === "govSetConfig") {
-          tokenAddresses.add(call.decoded.args[0]);
-          tokenAddresses.add(call.decoded.args[1]);
-          oracleAddresses.add(call.decoded.args[2]);
+          tokenAddresses.add(call.decoded.args[0] as Address);
+          tokenAddresses.add(call.decoded.args[1] as Address);
+          oracleAddresses.add(call.decoded.args[2] as Address);
         } else if (f === "govSetResolvedVault") {
-          vaultAddresses.add(call.decoded.args[0]);
+          vaultAddresses.add(call.decoded.args[0] as Address);
         } else if (f === "setLTV") {
-          vaultAddresses.add(call.decoded.args[0]);
+          vaultAddresses.add(call.decoded.args[0] as Address);
         }
 
         // Process nested batch if it exists
@@ -167,20 +202,86 @@ function App() {
     processCalls(items);
 
     (async () => {
-      const [oracleMap, vaultMap, tokenMap] = await Promise.all([
+      const [oracleMap, vaultMap, tokenMap, governorMap] = await Promise.all([
         indexOracles(Array.from(oracleAddresses), chain.client),
         indexVaults(Array.from(vaultAddresses), chain.client),
         indexTokens(Array.from(tokenAddresses), chain.client),
+        indexGovernors(Array.from(governorAddresses), chain.client, metadata),
       ]);
+
+      const updatedMetadata = {
+        ...metadata,
+        ...{ ...oracleMap, ...tokenMap, ...vaultMap, ...governorMap },
+      };
 
       setMetadata((prev) => ({
         ...prev,
-        ...{ ...oracleMap, ...tokenMap, ...vaultMap },
+        ...{ ...oracleMap, ...tokenMap, ...vaultMap, ...governorMap },
       }));
+
+      // Reset governor proxy flags for addresses that are not actually governors
+      function resetInvalidGovernorFlags(callList: DecodedEVCCall[]) {
+        callList.forEach((call) => {
+          if (call.isGovernorProxy && call.targetContract) {
+            // Check if the target contract is actually a governor
+            const isActuallyGovernor = updatedMetadata[call.targetContract]?.kind === "governor";
+            if (!isActuallyGovernor) {
+              // Reset the flags if it's not a governor
+              call.isGovernorProxy = false;
+              call.proxiedAddress = undefined;
+            }
+          }
+
+          // Process nested batch if it exists
+          if (call.nestedBatch?.items) {
+            resetInvalidGovernorFlags(call.nestedBatch.items);
+          }
+        });
+      }
+
+      resetInvalidGovernorFlags(items);
+
+      // Fetch oracle quotes for govSetConfig calls
+      const oracleQuotePromises: Promise<void>[] = [];
+
+      function collectOracleQuotes(callList: DecodedEVCCall[]) {
+        callList.forEach((call) => {
+          if (call.decoded?.functionName === "govSetConfig") {
+            const baseToken = call.decoded.args[0] as Address;
+            const quoteToken = call.decoded.args[1] as Address;
+            const oracleAddress = call.decoded.args[2] as Address;
+            
+            // Use 1 unit of the base token for the quote
+            const amount = 10n ** BigInt(updatedMetadata[baseToken]?.decimals || 18);
+            const quoteKey = `${oracleAddress}-${baseToken}-${quoteToken}`;
+            
+            oracleQuotePromises.push(
+              getOracleQuote(oracleAddress, baseToken, quoteToken, amount, chain.client)
+                .then(quote => {
+                  if (quote !== null) {
+                    setOracleQuotes(prev => new Map(prev).set(quoteKey, quote));
+                  }
+                })
+            );
+          }
+
+          // Process nested batch if it exists
+          if (call.nestedBatch?.items) {
+            collectOracleQuotes(call.nestedBatch.items);
+          }
+        });
+      }
+
+      collectOracleQuotes(items);
+      
+      // Wait for all oracle quotes to complete (for cleanup)
+      Promise.all(oracleQuotePromises).then(() => {
+        // All quotes completed
+      });
     })();
   }, [items]);
 
-  const diffs = getDiffs(items);
+  const diffs = items ? getDiffs(items) : undefined;
 
   return (
     <Box px={6} py={6}>
@@ -232,13 +333,9 @@ function App() {
 
         {error && <ErrorBox msg={error} />}
 
-        {diffs && <DiffsBox diffs={diffs} />}
+        {diffs && <DiffsBox diffs={diffs} oracleQuotes={oracleQuotes} />}
 
-        {timelockInfo && <div style={{ fontSize: '200%', fontWeight: 'bold', color: 'green', }}>
-            TIMELOCK DELAY = {timelockInfo.delay.toString()}s
-        </div>}
-
-        {items && <BatchBox items={items} />}
+        {items && <BatchBox items={items} timelockInfo={timelockInfo} oracleQuotes={oracleQuotes} />}
       </Flex>
     </Box>
   );

@@ -1,10 +1,59 @@
 import { Address, Hash, Hex, parseAbi, PublicClient } from "viem";
 import {
   AddressMetadataMap,
+  GovernorMetadata,
   OracleMetadata,
   TokenMetadata,
   VaultMetadata,
 } from "./types";
+
+export async function indexGovernors(
+  addresses: Address[],
+  client: PublicClient,
+  existingMetadata?: AddressMetadataMap<any>
+): Promise<AddressMetadataMap<GovernorMetadata>> {
+  const callResults = await client.multicall({
+    contracts: addresses.flatMap((address) => [
+      {
+        address,
+        abi: parseAbi(["function isGovernorAccessControl() external pure returns (bytes4)"]),
+        functionName: "isGovernorAccessControl",
+      },
+    ]),
+  });
+
+  const callValues = callResults.map(({ result, error }) =>
+    error ? undefined : result
+  );
+
+  const metadataMap: AddressMetadataMap<GovernorMetadata> = {};
+
+  addresses.forEach((address, i) => {
+    const isGovernorAccessControl = callValues[i] as string | undefined;
+    
+    // Only add to metadata if it's actually a governor contract
+    if (isGovernorAccessControl) {
+      // Check if we already have metadata for this address
+      const existingMeta = existingMetadata?.[address];
+      let name: string;
+      
+      if (existingMeta?.kind === "global" && existingMeta.label) {
+        // Use the existing label from euler-interfaces
+        name = existingMeta.label;
+      } else {
+        // Fall back to generated name
+        name = `${address.substring(0, 6)}...${address.substring(36)}`;
+      }
+      
+      metadataMap[address] = {
+        kind: "governor",
+        name: name,
+      };
+    }
+  });
+
+  return metadataMap;
+}
 
 export async function indexOracles(
   addresses: Address[],
@@ -122,6 +171,27 @@ export async function indexTokens(
   });
 
   return metadataMap;
+}
+
+export async function getOracleQuote(
+  oracle: Address,
+  baseToken: Address,
+  quoteToken: Address,
+  amount: bigint,
+  client: PublicClient
+): Promise<bigint | null> {
+  try {
+    const quote = await client.readContract({
+      address: oracle,
+      abi: parseAbi(["function getQuote(uint256 amount, address base, address quote) external view returns (uint256)"]),
+      functionName: "getQuote",
+      args: [amount, baseToken, quoteToken],
+    });
+    return quote;
+  } catch (e) {
+    console.warn(`Failed to get quote from oracle ${oracle}:`, e);
+    return null;
+  }
 }
 
 export async function getTxCalldata(

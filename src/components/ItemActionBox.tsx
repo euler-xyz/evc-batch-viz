@@ -7,10 +7,16 @@ import { useAddressMetadata } from "../context/AddressContext";
 type Props = {
   i: number;
   item: DecodedEVCCall;
+  oracleQuotes?: Map<string, bigint>;
 };
 
-function ItemActionBox({ i, item }: Props) {
+function ItemActionBox({ i, item, oracleQuotes }: Props) {
   const { metadata } = useAddressMetadata();
+  
+  if (!item.decoded) {
+    return <div>Unknown action</div>;
+  }
+  
   const { functionName, args } = item.decoded;
 
   let targetContract = item.targetContract;
@@ -25,11 +31,19 @@ function ItemActionBox({ i, item }: Props) {
     metadata[targetContract]?.kind === "global" &&
     metadata[targetContract].label === 'governor/capRiskSteward';
 
-  const isProxyCall = targetIsGAC || targetIsCapRiskSteward;
+  const targetIsGovernor =
+    targetContract &&
+    metadata[targetContract]?.kind === "governor";
+
+  const isProxyCall = targetIsGAC || targetIsCapRiskSteward || (item.isGovernorProxy && targetIsGovernor);
   const originalProxy = targetContract;
 
   if (isProxyCall) {
-    targetContract = checksumAddress(`0x${item.data.slice(-40)}`);
+    if (item.proxiedAddress) {
+      targetContract = item.proxiedAddress;
+    } else {
+      targetContract = checksumAddress(`0x${item.data.slice(-40)}`);
+    }
   }
 
   function getContent() {
@@ -50,11 +64,17 @@ function ItemActionBox({ i, item }: Props) {
       );
     }
     if (functionName === "govSetConfig") {
+      const baseToken = args[0] as Address;
+      const quoteToken = args[1] as Address;
+      const oracleAddress = args[2] as Address;
+      const quoteKey = `${oracleAddress}-${baseToken}-${quoteToken}`;
+      const quote = oracleQuotes?.get(quoteKey);
+      
       return (
         <Text>
-          Configure {target} to use <AddressValue a={args[2]} /> for{" "}
-          <AddressValue a={args[0]} />/
-          <AddressValue a={args[1]} />
+          Configure {target} to use <AddressValue a={oracleAddress} /> for{" "}
+          <AddressValue a={baseToken} />/
+          <AddressValue a={quoteToken} />
         </Text>
       );
     }
@@ -242,6 +262,10 @@ function ItemActionBox({ i, item }: Props) {
     //     </Text>
     //   );
     // }
+
+    if (functionName === "batch") {
+      return <Text>Execute batch on {target}</Text>;
+    }
   }
 
   const content = getContent();

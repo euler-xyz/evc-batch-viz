@@ -21,9 +21,10 @@ import { useAddressMetadata } from "../context/AddressContext";
 type Props = {
   address: Address;
   routerDiff: RouterDiff;
+  oracleQuotes?: Map<string, bigint>;
 };
 
-function RouterDiffBox({ address, routerDiff }: Props) {
+function RouterDiffBox({ address, routerDiff, oracleQuotes }: Props) {
   const { isOpen, onToggle } = useDisclosure();
   const { metadata } = useAddressMetadata();
 
@@ -61,13 +62,31 @@ function RouterDiffBox({ address, routerDiff }: Props) {
                 return (
                   <Flex direction="column" gap={2}>
                     {(value as ConfigDiff[]).map((configDiff, i) => {
+                      const quoteKey = `${configDiff.oracle}-${configDiff.base}-${configDiff.quote}`;
+                      const quote = oracleQuotes?.get(quoteKey);
+                      
+                      // Format quote based on quote token decimals
+                      let formattedQuote = null;
+                      if (quote) {
+                        const quoteTokenMetadata = metadata[configDiff.quote];
+                        const decimals = quoteTokenMetadata?.decimals || 18; // Default to 18 if not found
+                        const formattedValue = Number(quote) / Math.pow(10, decimals);
+                        const isUSD = configDiff.quote.toLowerCase() === '0x0000000000000000000000000000000000000348';
+                        
+                        if (isUSD) {
+                          formattedQuote = ` (@ ${formattedValue.toFixed(2)})`;
+                        } else {
+                          formattedQuote = ` (@ ${formattedValue.toFixed(6)})`;
+                        }
+                      }
+                      
                       return (
                         <Text key={i}>
                           Configure oracle{" "}
                           <AddressValue a={configDiff.oracle} /> to resolve{" "}
                           <AddressValue a={configDiff.base} />
                           /
-                          <AddressValue a={configDiff.quote} />
+                          <AddressValue a={configDiff.quote} />{formattedQuote}
                         </Text>
                       );
                     })}

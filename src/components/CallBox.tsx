@@ -21,9 +21,12 @@ type Props = {
   i: number;
   children?: ReactNode;
   batchType?: 'batch' | 'scheduleBatch' | 'schedule';
+  isGovernorProxy?: boolean;
+  proxiedAddress?: Address;
+  oracleQuotes?: Map<string, bigint>;
 };
 
-function CallBox({ decoded, i, targetContract, data, children, batchType }: Props) {
+function CallBox({ decoded, i, targetContract, data, children, batchType, isGovernorProxy, proxiedAddress, oracleQuotes }: Props) {
   const { metadata } = useAddressMetadata();
   const { args } = decoded;
 
@@ -38,18 +41,27 @@ function CallBox({ decoded, i, targetContract, data, children, batchType }: Prop
   const targetIsGAC =
     targetContract &&
     metadata[targetContract]?.kind === "global" &&
-    metadata[targetContract].label === 'governor/accessControlEmergencyGovernor';
+    (metadata[targetContract] as any).label === 'governor/accessControlEmergencyGovernor';
 
   const targetIsCapRiskSteward =
     targetContract &&
     metadata[targetContract]?.kind === "global" &&
-    metadata[targetContract].label === 'governor/capRiskSteward';
+    (metadata[targetContract] as any).label === 'governor/capRiskSteward';
 
-  const isProxyCall = targetIsGAC || targetIsCapRiskSteward;
+  const targetIsGovernor =
+    targetContract &&
+    metadata[targetContract]?.kind === "governor";
+
+  const isProxyCall = targetIsGAC || targetIsCapRiskSteward || isGovernorProxy;
 
   if (isProxyCall) {
-    targetContract = checksumAddress(`0x${data.slice(-40)}`);
+    if (proxiedAddress) {
+      targetContract = proxiedAddress;
+    } else {
+      targetContract = checksumAddress(`0x${data.slice(-40)}`);
+    }
   }
+
 
   return (
     <Flex
@@ -91,7 +103,7 @@ function CallBox({ decoded, i, targetContract, data, children, batchType }: Prop
             <Box as="span" color="gray.500" fontStyle="italic">
               proxy=
             </Box>
-            <AddressValue a={originalProxy} />
+            <AddressValue a={originalProxy!} />
           </>
         )}
       </Box>

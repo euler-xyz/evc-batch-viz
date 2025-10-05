@@ -9,9 +9,10 @@ type Props = {
   item: DecodedEVCCall;
   i: number;
   isAdvancedMode: boolean;
+  oracleQuotes?: Map<string, bigint>;
 };
 
-function ItemBox({ item, i, isAdvancedMode }: Props) {
+function ItemBox({ item, i, isAdvancedMode, oracleQuotes }: Props) {
   if (!item.decoded) {
     return (
       <Flex
@@ -41,7 +42,7 @@ function ItemBox({ item, i, isAdvancedMode }: Props) {
   }
 
   return !isAdvancedMode ? (
-    <ItemActionBox i={i} item={item} />
+    <ItemActionBox i={i} item={item} oracleQuotes={oracleQuotes} />
   ) : (
     <Flex direction="column" gap={2}>
       <CallBox
@@ -50,18 +51,26 @@ function ItemBox({ item, i, isAdvancedMode }: Props) {
         batchType={item.batchType}
         i={i}
         targetContract={item.targetContract}
+        isGovernorProxy={item.isGovernorProxy}
+        proxiedAddress={item.proxiedAddress}
+        oracleQuotes={oracleQuotes}
       >
         <>
+          {item.onBehalfOfAccount && item.onBehalfOfAccount !== "0x0000000000000000000000000000000000000000" && (
+            <>
+              ,{" "}
+              <Box as="span" color="gray.500" fontStyle="italic">
+                onBehalfOf=
+              </Box>
+              <AddressValue a={item.onBehalfOfAccount} />
+            </>
+          )}
           ,{" "}
-          <Box as="span" color="gray.500" fontStyle="italic">
-            onBehalfOf=
-          </Box>
-          <AddressValue a={item.onBehalfOfAccount} />,{" "}
           <Box as="span" color="gray.500" fontStyle="italic">
             value=
           </Box>
           {item.value.toString()}
-          {item.predecessor && (
+          {item.predecessor && item.batchType !== 'scheduleBatch' && item.batchType !== 'schedule' && (
             <>
               ,{" "}
               <Box as="span" color="gray.500" fontStyle="italic">
@@ -70,13 +79,22 @@ function ItemBox({ item, i, isAdvancedMode }: Props) {
               {item.predecessor}
             </>
           )}
-          {item.salt && (
+          {item.salt && item.batchType !== 'scheduleBatch' && item.batchType !== 'schedule' && (
             <>
               ,{" "}
               <Box as="span" color="gray.500" fontStyle="italic">
                 salt=
               </Box>
               {item.salt}
+            </>
+          )}
+          {item.timelockDelay !== undefined && item.timelockDelay !== null && item.batchType !== 'scheduleBatch' && item.batchType !== 'schedule' && (
+            <>
+              ,{" "}
+              <Box as="span" color="gray.500" fontStyle="italic">
+                delay=
+              </Box>
+              {item.timelockDelay}s
             </>
           )}
         </>
@@ -86,7 +104,7 @@ function ItemBox({ item, i, isAdvancedMode }: Props) {
       {item.nestedBatch && (
         <Box ml={4} borderLeft="2px solid" borderColor="blue.200" pl={4}>
           <Text fontWeight="bold" color="blue.600" mb={2}>
-            Nested EVC Batch:
+            Batch to execute:
           </Text>
           {item.nestedBatch.timelockInfo && (
             <Box mb={2} p={2} bg="green.50" borderRadius="md">
@@ -95,7 +113,7 @@ function ItemBox({ item, i, isAdvancedMode }: Props) {
               </Text>
             </Box>
           )}
-          <BatchBox items={item.nestedBatch.items} />
+          <BatchBox items={item.nestedBatch.items} isNested={true} oracleQuotes={oracleQuotes} />
         </Box>
       )}
     </Flex>

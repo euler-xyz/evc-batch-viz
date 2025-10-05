@@ -8,7 +8,7 @@ type Props = {
 };
 
 function AddressValue({ a }: Props) {
-  if (a === zeroAddress) return <span style={{ color: 'red', }}>UNKNOWN address(0)</span>;
+  if (a === zeroAddress) return <span>address(0)</span>;
   if (a === undefined) return <span style={{ color: 'red', }}>UNKNOWN undefined</span>;
 
   const { metadata: allMetadata } = useAddressMetadata();
@@ -31,6 +31,8 @@ function AddressValue({ a }: Props) {
           return <span>{metadata.name}</span>;
         } else if (metadata.kind === "token") {
           return <span>{metadata.symbol}</span>;
+        } else if (metadata.kind === "governor") {
+          return <span>{metadata.name}</span>;
         } else {
           return <span>{metadata.label}</span>;
         }
@@ -45,7 +47,7 @@ function AddressValue({ a }: Props) {
       isExternal
     >
       <Box as="span" bgColor={color} color="black" px={1} rounded="full">
-        {content} {metadata && metadata.legacy && <b>LEGACY</b>}
+        {content} {metadata && (metadata as any).legacy && <b>LEGACY</b>}
       </Box>
     </Link>
   );

@@ -4,9 +4,9 @@ import { Flex, Heading } from "@chakra-ui/react";
 import VaultDiffBox from "./VaultDiffBox";
 import RouterDiffBox from "./RouterDiffBox";
 
-type Props = { diffs: Diffs };
+type Props = { diffs: Diffs; oracleQuotes?: Map<string, bigint> };
 
-function DiffsBox({ diffs }: Props) {
+function DiffsBox({ diffs, oracleQuotes }: Props) {
   return (
     <Flex direction="column" gap={4}>
       <Heading size="lg">Changes</Heading>
@@ -34,6 +34,7 @@ function DiffsBox({ diffs }: Props) {
               key={address}
               address={address as Address}
               routerDiff={routerDiff}
+              oracleQuotes={oracleQuotes}
             />
           ))}
         </Flex>

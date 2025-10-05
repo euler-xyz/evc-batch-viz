@@ -8,7 +8,7 @@ import { abi } from "./constants";
 
 export type EVCBatchArgs = {
   targetContract: `0x${string}`;
-  onBehalfOfAccount: `0x${string}`;
+  onBehalfOfAccount?: `0x${string}`;
   value: bigint;
   data: `0x${string}`;
 };
@@ -132,13 +132,16 @@ export type DecodedEVCCall = EVCBatchArgs & {
   batchType?: 'batch' | 'scheduleBatch' | 'schedule';
   predecessor?: string;
   salt?: string;
+  timelockDelay?: number;
   nestedBatch?: {
     items: DecodedEVCCall[];
     timelockInfo?: any;
   };
+  isGovernorProxy?: boolean; // Indicates if this call goes through a governor contract
+  proxiedAddress?: Address; // The actual address being proxied through the governor
 };
 
-export type AddressKind = "vault" | "oracle" | "token" | "global";
+export type AddressKind = "vault" | "oracle" | "token" | "global" | "governor";
 
 export type VaultMetadata = {
   kind: "vault";
@@ -161,13 +164,21 @@ export type TokenMetadata = {
 export type GlobalMetadata = {
   kind: "global";
   label: string;
+  legacy?: boolean;
+};
+
+export type GovernorMetadata = {
+  kind: "governor";
+  name: string;
+  proxiedAddress?: Address; // The actual vault/contract being proxied
 };
 
 export type AddressMetadata =
   | VaultMetadata
   | OracleMetadata
   | TokenMetadata
-  | GlobalMetadata;
+  | GlobalMetadata
+  | GovernorMetadata;
 
 export type AddressMetadataMap<T extends AddressMetadata> = {
   [address: Address]: T;

@@ -48,6 +48,7 @@ export function decodeEVCBatch(contents: { data: any }): { items: any[], timeloc
         items.push({ 
           data: args[2][i], 
           targetContract: args[0][i], 
+          onBehalfOfAccount: zeroAddress,
           value: args[1][i], 
           decoded: decodedItem, 
           batchType: 'scheduleBatch',
@@ -55,7 +56,7 @@ export function decodeEVCBatch(contents: { data: any }): { items: any[], timeloc
         });
     }
 
-    timelockInfo = { delay: args[5], };
+    timelockInfo = { delay: Number(args[5]), predecessor: args[3], salt: args[4] };
   } else if (decodedBatch.functionName === "schedule") {
     let args = decodedBatch.args;
     
@@ -77,15 +78,17 @@ export function decodeEVCBatch(contents: { data: any }): { items: any[], timeloc
     items.push({ 
       data: args[2], 
       targetContract: args[0], 
+      onBehalfOfAccount: zeroAddress,
       value: args[1], 
       decoded: decodedItem, 
       batchType: 'schedule',
       predecessor: args[3],
       salt: args[4],
-      nestedBatch
+      nestedBatch,
+      timelockDelay: Number(args[5])
     });
 
-    timelockInfo = { delay: args[5] };
+    timelockInfo = { delay: Number(args[5]), predecessor: args[3], salt: args[4] };
   } else {
     items.push({ data: contents.data, targetContract: zeroAddress, value: 0n, decoded: decodedBatch, });
   }

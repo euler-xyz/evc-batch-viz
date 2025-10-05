@@ -6,17 +6,42 @@ import { useAddressMetadata } from "../context/AddressContext";
 
 type Props = {
   items: DecodedEVCCall[];
+  timelockInfo?: any;
+  isNested?: boolean;
+  oracleQuotes?: Map<string, bigint>;
 };
 
-function BatchBox({ items }: Props) {
+function BatchBox({ items, timelockInfo, isNested = false, oracleQuotes }: Props) {
   const [isAdvancedMode, setAdvancedMode] = useState<boolean>(true);
   const { metadata } = useAddressMetadata();
 
   return (
     <Flex direction="column" gap={2}>
-      <Heading size="lg" mb={2}>
-        Items
-      </Heading>
+      {!isNested && (
+        <Heading size="lg" mb={2}>
+          Calls
+        </Heading>
+      )}
+      {timelockInfo && (
+        <Flex direction="column" gap={1} mb={2}>
+          <Text fontSize="sm" color="green.700" fontWeight="bold">
+            Timelock:
+          </Text>
+          <Text fontSize="sm" color="green.700" ml={2}>
+            delay = {timelockInfo.delay}s
+          </Text>
+          {timelockInfo.predecessor && (
+            <Text fontSize="sm" color="green.700" ml={2}>
+              predecessor = {timelockInfo.predecessor}
+            </Text>
+          )}
+          {timelockInfo.salt && (
+            <Text fontSize="sm" color="green.700" ml={2}>
+              salt = {timelockInfo.salt}
+            </Text>
+          )}
+        </Flex>
+      )}
       <Flex direction="row" align="baseline" gap={4}>
         <Heading size="md">{items.length} batch items</Heading>
         <HStack>
@@ -31,7 +56,7 @@ function BatchBox({ items }: Props) {
         </HStack>
       </Flex>
       {items.map((item, i) => (
-        <ItemBox key={i} item={item} i={i} isAdvancedMode={isAdvancedMode} />
+        <ItemBox key={i} item={item} i={i} isAdvancedMode={isAdvancedMode} oracleQuotes={oracleQuotes} />
       ))}
     </Flex>
   );
