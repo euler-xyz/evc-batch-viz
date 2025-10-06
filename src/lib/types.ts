@@ -233,6 +233,8 @@ export type VaultDiff = {
     feeReceiver: Address;
     maxLiquidationDiscount: number;
     liquidationCoolOffTime: number;
+    hookTarget?: Address;
+    hookedOps?: string;
   };
 };
 

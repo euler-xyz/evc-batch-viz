@@ -10,6 +10,38 @@ import {
 } from "./types";
 import { useAddressMetadata } from "../context/AddressContext";
 
+// Hook operation constants
+const HOOK_OPERATIONS = {
+  OP_DEPOSIT: 1 << 0,
+  OP_MINT: 1 << 1,
+  OP_WITHDRAW: 1 << 2,
+  OP_REDEEM: 1 << 3,
+  OP_TRANSFER: 1 << 4,
+  OP_SKIM: 1 << 5,
+  OP_BORROW: 1 << 6,
+  OP_REPAY: 1 << 7,
+  OP_REPAY_WITH_SHARES: 1 << 8,
+  OP_PULL_DEBT: 1 << 9,
+  OP_CONVERT_FEES: 1 << 10,
+  OP_LIQUIDATE: 1 << 11,
+  OP_FLASHLOAN: 1 << 12,
+  OP_TOUCH: 1 << 13,
+  OP_VAULT_STATUS_CHECK: 1 << 14,
+} as const;
+
+function decodeHookedOperations(hookedOps: bigint): string[] {
+  const operations: string[] = [];
+  const opsValue = Number(hookedOps);
+  
+  for (const [opName, opValue] of Object.entries(HOOK_OPERATIONS)) {
+    if (opsValue & opValue) {
+      operations.push(opName);
+    }
+  }
+  
+  return operations;
+}
+
 export function getDiffs(calls: DecodedEVCCall[]): Diffs | undefined {
   const { metadata } = useAddressMetadata();
   const vaults: { [address: Address]: VaultDiff } = {};
@@ -94,12 +126,14 @@ export function getDiffs(calls: DecodedEVCCall[]): Diffs | undefined {
         };
       } else if (f === "setHookConfig") {
         const existingVault = vaults[targetContract];
+        const hookedOps = call.decoded.args[1] as bigint;
+        const hookedOperations = decodeHookedOperations(hookedOps);
         vaults[targetContract] = {
           ...existingVault,
           newValues: {
             ...existingVault?.newValues,
-            // hookTarget: call.decoded.args[0] as Address,
-            // hookedOps: call.decoded.args[1] as bigint,
+            hookTarget: call.decoded.args[0] as Address,
+            hookedOps: hookedOperations.length > 0 ? `${hookedOperations.join(", ")} (${hookedOps})` : `None (${hookedOps})`,
           },
         };
       } else if (f === "setInterestFee") {
