@@ -111,6 +111,9 @@ for (let config of eulerChains) {
     supportedChainList.push(config);
 }
 
+// Sort chains by chain ID
+supportedChainList.sort((a, b) => a.chainId - b.chainId);
+
 
 function loadDeploymentAddresses(
   chainId: number
